@@ -1,4 +1,4 @@
-inspotify
+entrance
 =========
 
-Plays your music when you walk up to it
+Helps you make an enTrance when you want with your music
