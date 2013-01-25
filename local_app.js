@@ -25,7 +25,6 @@ trackRecord.initialize(function(err, facebookAPI) {
 
       // Grab the uid
       uid = data.substring(prefix.length).trim();
-      console.log("WHOA!");
       console.log(uid);
       if (uid == my_uid) {
         console.log("GO TIME");
