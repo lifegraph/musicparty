@@ -1,5 +1,5 @@
 var serialport = require("serialport");
-var trackRecord = require("/trackrecord");
+var trackRecord = require("./trackrecord");
 var SerialPort = serialport.SerialPort;
 // var arduino_port = "/dev/tty.usbmodem1411";
 var arduino_port = "/dev/cu.usbmodemfa131";
