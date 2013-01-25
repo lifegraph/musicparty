@@ -28,7 +28,6 @@ trackRecord.initialize(function(err, facebookAPI) {
       console.log(uid);
       if (uid == my_uid) {
         console.log("GO TIME");
-        console.log(facebookAPI);
         trackRecord.playFavorites(facebookAPI, "jon.mckay");
       }
     }
