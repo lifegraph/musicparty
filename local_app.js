@@ -1,5 +1,5 @@
 var serialport = require("serialport");
-
+var trackRecord = require("/trackrecord");
 var SerialPort = serialport.SerialPort;
 // var arduino_port = "/dev/tty.usbmodem1411";
 var arduino_port = "/dev/cu.usbmodemfa131";
@@ -27,6 +27,7 @@ serialPort.on("data", function (data) {
     console.log(uid);
     if (uid == my_uid) {
       console.log("GO TIME")
+
     }
   }
 });
