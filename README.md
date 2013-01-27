@@ -10,6 +10,16 @@ To get it working:
 - Set environment variables SPOTIFY_KEYPATH, SPOTIFY_USERNAME, SPOTIFY_PASSWORD to the path to your Spotify API key, your spotify username, and your spotify password, respectively.
 - Make sure the serial port in local_app.js is where your Arduino is connected to (we'll make this automatic later)
 
+List of "Favorite" music sources to support:
+* Facebook Favorite Artists _done_
+* Facebook Latest List
+* Spotify (Starred Artists)
+* Rdio (User Collections)
+* Last.fm (Starred Tracks)
+
+
+
+
 V1 - Streams music from computer
 
 V2 - Work with student prox cards
