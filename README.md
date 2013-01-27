@@ -11,8 +11,9 @@ To get it working:
 - Make sure the serial port in local_app.js is where your Arduino is connected to (we'll make this automatic later)
 
 List of "Favorite" music sources to support:
-* Facebook Favorite Artists _done_
-* Facebook Latest List
+* Facebook Favorite Artists... _done!_
+* Facebook Latest List... _working on it_
+* Facebook Music related likes
 * Spotify (Starred Artists)
 * Rdio (User Collections)
 * Last.fm (Starred Tracks)
