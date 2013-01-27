@@ -1,0 +1,30 @@
+html
+  head
+    title #{namespace}
+    script(src='//code.jquery.com/jquery-1.9.0.min.js')
+    link(rel='stylesheet', href='//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css')
+    link(rel='stylesheet', href='//netdna.bootstrapcdn.com/bootswatch/2.1.1/readable/bootstrap.min.css')
+    script(src='//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js')
+    script(type='text/javascript')
+      function updateKeys() {
+        var apikey = $('#apikey').val();
+        var secretkey = $('#secretkey').val();
+        $.post('/#{namespace}/keys/' + apikey + '/' + secretkey + '/' + 'user_actions.music,friends_actions.music' , function(data) {
+          $('#apikey').val('');
+          $('#secretkey').val('');
+        });
+      }
+
+  body
+    h1 Welcome to #{namespace}
+    #apikey
+      div(class='textbox-div')
+        | API Key: 
+        input(type='text', id='apikey', autofocus)
+      div(class='textbox-div')
+        | Secret Key: 
+        input(type='text', id='secretkey')
+      div#button-div
+        button(type='button', id='updatekeys', class='btn btn-primary', data-loading-text='Loading...', onclick='updateKeys();') Update
+    #fbids
+      | #{fbids}
