@@ -8,7 +8,7 @@ var gateKeeperHostname = 'fb-gate-keeper.herokuapp.com';
  */
  function authenticateWithGateKeeper(deviceID, callback) {
 
-  // Configure out get request
+  // Configure our get request
   var options = {
     host: gateKeeperHostname,
     path: '/entrance/user/' + encodeURIComponent(deviceID) 
@@ -32,7 +32,6 @@ var gateKeeperHostname = 'fb-gate-keeper.herokuapp.com';
       JSONResultParse(JSONResponse, callback);
     });
   }); // end of http.get
-
  }
 
 /*

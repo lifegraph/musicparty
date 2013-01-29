@@ -45,11 +45,11 @@ console.log("Hi! listening to " + arduino_port);
         return;
       }
 
-      gateKeeper.authenticate(fakeUID, function(error, facebookID) {
+      gateKeeper.authenticate(trying_to_connect_uid, function(error, facebookID) {
 
         if (facebookID) {
           console.log("VALID TAG: IT'S GO TIME FOR USERNAME: " + facebookID);
-          trackRecord.playTracks(facebookID);
+          trackRecord.playFavorites(facebookID);
           console.log("Streaming: " + trackRecord.isStreaming);
           set_last_uid_to_connect(trying_to_connect_uid);
         }
