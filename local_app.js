@@ -49,7 +49,7 @@ console.log("Hi! listening to " + arduino_port);
 
         if (facebookID) {
           console.log("VALID TAG: IT'S GO TIME FOR USERNAME: " + facebookID);
-          // trackRecord.playFavorites(facebookAPI, my_fbid);
+          trackRecord.playTracks(facebookID);
           console.log("Streaming: " + trackRecord.isStreaming);
           set_last_uid_to_connect(trying_to_connect_uid);
         }
