@@ -43,6 +43,7 @@ app.configure('development', function(){
 
 
 app.get('/:localEntranceId/:facebookID/tracks', function(req, res) {
+  console.log(JSON.stringify(gateKeeper, undefined, 2));
   gateKeeper.requestUser(req.params.facebookID, function(error, user) {
     // If we have an error, then there was a problem with the HTTP call
     // or the user isn't in the db and they need to sync

@@ -6,7 +6,7 @@ var gateKeeperHostname = 'fb-gate-keeper.herokuapp.com';
  * of the user with that rfid uid. 
  * Callback: function that accepts an error and a facebookID
  */
- function authenticateWithGateKeeper(deviceID, callback) {
+ function requestUser(deviceID, callback) {
 
   // Configure our get request
   var options = {
@@ -53,4 +53,4 @@ var gateKeeperHostname = 'fb-gate-keeper.herokuapp.com';
     }
  }
 
- exports.authenticate = authenticateWithGateKeeper;
+ exports.requestUser = requestUser;
