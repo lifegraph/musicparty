@@ -1,0 +1,1 @@
+web: entrance-remote/node app.js
