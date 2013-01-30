@@ -44,7 +44,7 @@ serialPort.on("data", function (data) {
       return;
     }
 
-    HTTP_GET('entranceapp.herokuapp.com', '/' + fakeUID + '/' + encodeURIComponent(trying_to_connect_uid) + "/tracks", function(error, jsonResponse) {
+    HTTP_GET('localhost', '/' + fakeUID + '/' + encodeURIComponent(trying_to_connect_uid) + "/tracks", 3000, function(error, jsonResponse) {
     	if (error) {
     		console.log("Error fetching tracks from Entrance backend: " + error.message);
     		return;
@@ -76,10 +76,11 @@ function clear_last_uid() {
 /*
  * Wrapper method for HTTP GETs
  */
-function HTTP_GET(hostname, path, callback) {
+function HTTP_GET(hostname, path, port, callback) {
   console.log("Making GET to " + hostname + path);
   // Configure our get request
   var options = {
+  	port: (port ? port : 80),
     host: hostname,
     path: path
   };

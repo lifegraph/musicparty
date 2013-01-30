@@ -7,6 +7,7 @@ var express = require('express')
   , routes = require('./routes')
   , user = require('./routes/user')
   , http = require('http')
+  , https = require('https')
   , path = require('path')
   , mongo = require('mongodb');
 
@@ -68,9 +69,11 @@ app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
     // Send them out
     var tracks = {
       'tracks' : [
-        {
-          'artist' : 'Incubus', 'song' : 'Drive' } , {'artist' : 'The Postal Service', 'song' : 'Such Great Heights'
-        }
+        { 'artist' : 'Incubus', 'song' : 'Drive' } , 
+        { 'artist' : 'The Postal Service', 'song' : 'Such Great Heights'} ,
+        { 'artist' : 'Death Cab For Cutie', 'song' : 'Summer Skin'},
+        { 'artist' : 'The Last Bison', 'song' : 'Switzerland'} ,
+        { 'artist' : 'Passion Pit', 'song' : 'Silvia'}
     ]};
 
     res.send(tracks);
@@ -113,6 +116,8 @@ function HTTP_GET (hostname, path, callback) {
  * of a user, then call a callback
  */
 function getFacebookFavoriteArtists(facebookUser, callback) {
+
+  console.log("ACCESS TOKEN: " + facebookUser.access_token);
 
   // Use the Facebook API to get all the music likes of a user
   var options = {
