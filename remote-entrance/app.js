@@ -28,7 +28,7 @@ app.configure(function(){
   app.use(express.favicon());
   app.use(express.logger('dev'));
   app.use(express.bodyParser());
-    app.use(express.cookieParser());
+  app.use(express.cookieParser());
   app.use(express.cookieSession({
     secret: 'entranceapp'
   }));
@@ -42,9 +42,9 @@ app.configure('development', function(){
 });
 
 
-app.get('/:localEntranceId/:deviceId/tracks', function(req, res) {
+app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
   console.log(JSON.stringify(gateKeeper, undefined, 2));
-  gateKeeper.requestUser(req.params.deviceId, function(error, user) {
+  gateKeeper.requestUser(req.params.deviceId, function (error, user) {
     // If we have an error, then there was a problem with the HTTP call
     // or the user isn't in the db and they need to sync
     if (error) {
@@ -56,36 +56,39 @@ app.get('/:localEntranceId/:deviceId/tracks', function(req, res) {
       console.log("We got the user: " + user);
     }
 
-  // Once we have the user, retrieve all the user source preferences from the db 
-  // (we may need several access tokens for different services?)
+    // Once we have the user, retrieve all the user source preferences from the db 
+    // (we may need several access tokens for different services?)
 
-  // Retrieve appropriate songs from each of the sources
+    // Retrieve appropriate songs from each of the sources
 
-  // Package up the songs into JSON?
+    // Package up the songs into JSON?
 
   getFacebookFavoriteArtists(user, null);
 
-  // Send them out
-    var tracks = {'tracks' : [
-      {'artist' : 'Incubus', 'song' : 'Drive' } , {'artist' : 'The Postal Service', 'song' : 'Such Great Heights' }
-  ]};
+    // Send them out
+    var tracks = {
+      'tracks' : [
+        {
+          'artist' : 'Incubus', 'song' : 'Drive' } , {'artist' : 'The Postal Service', 'song' : 'Such Great Heights'
+        }
+    ]};
 
-  res.send(tracks);
+    res.send(tracks);
   });
 });
 
 /*
  * Wrapper method for HTTP GETs
  */
-function HTTP_GET(hostname, path, callback) {
-    console.log("Making GET to " + hostname + path);
-    // Configure our get request
-    var options = {
-      host: hostname,
-      path: path
-    };
+function HTTP_GET (hostname, path, callback) {
+  console.log("Making GET to " + hostname + path);
+  // Configure our get request
+  var options = {
+    host: hostname,
+    path: path
+  };
 
-   http.get(options, function(res) {
+  http.get(options, function(res) {
     var output = '';
     var jsonResult;
     res.on('error', function(e) {
