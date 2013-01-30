@@ -1,6 +1,5 @@
 var serialport = require("serialport");
 var trackRecord = require("./trackrecord/trackrecord");
-var gateKeeper = require("./gate-keeperClient.js");
 var SerialPort = serialport.SerialPort;
 // var arduino_port = "/dev/tty.usbmodem1411";
 var arduino_port = "/dev/cu.usbmodemfa131";

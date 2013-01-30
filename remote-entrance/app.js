@@ -13,6 +13,7 @@ var express = require('express')
 var app = express();
 var hostUrl = 'http://entranceapp.herokuapp.com'
 var mongo = require('mongodb');
+var gateKeeper = require("./gate-keeperClient.js");
 var Db = mongo.Db;
 var mongoUri = process.env.MONGOLAB_URI || 
   process.env.MONGOHQ_URL || 
@@ -41,22 +42,20 @@ app.configure('development', function(){
 });
 
 
-app.get('/:facebookID/tracks', function(req, res) {
-  if (!req.session.access_token) {
-    console.log("No access token. Asking gate-keeper for it.");
+app.get('/:localEntranceId/:facebookID/tracks', function(req, res) {
+  gateKeeper.requestUser(req.params.facebookID, function(error, user) {
+    // If we have an error, then there was a problem with the HTTP call
+    // or the user isn't in the db and they need to sync
+    if (error) {
+      console.log("We had an error with Gatekeeper: " + error.message);
+    } 
 
-    // Request Access Token from GateKeeper
-    HTTP_GET('fb-gate-keeper.herokuapp.com', '/entrance/' + req.params.facebookID + '/token', function(error, jsonResponse) {
-      if (error) {
-        console.log("Error retrieveing access token: " + error.message);
-        return;
-      }
-      console.log(jsonResponse);
-    })
+    // Else, we have the user... wooh!
+    else if (user) {
+      console.log("We got the user: " + user);
+    }
 
-  }
-
-  // Once we have the access token, retrieve all the user source preferences from the db 
+  // Once we have the user, retrieve all the user source preferences from the db 
   // (we may need several access tokens for different services?)
 
   // Retrieve appropriate songs from each of the sources
@@ -64,6 +63,8 @@ app.get('/:facebookID/tracks', function(req, res) {
   // Package up the songs into JSON?
 
   // Send them out
+  });
+});
 
   var tracks = {'tracks' : [
       {'artist' : 'Incubus', 'song' : 'Drive' } , {'artist' : 'The Postal Service', 'song' : 'Such Great Heights' }
