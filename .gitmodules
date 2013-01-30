@@ -1,4 +1,4 @@
 
 [submodule "trackrecord"]
 	path = local-entrance/trackrecord
-	url = git@github.com:johnnyman727/trackrecord.git
+	url = https://github.com/johnnyman727/trackrecord.git
