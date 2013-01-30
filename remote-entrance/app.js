@@ -63,6 +63,8 @@ app.get('/:localEntranceId/:deviceId/tracks', function(req, res) {
 
   // Package up the songs into JSON?
 
+  getFacebookFavoriteArtists(user, null);
+
   // Send them out
     var tracks = {'tracks' : [
       {'artist' : 'Incubus', 'song' : 'Drive' } , {'artist' : 'The Postal Service', 'song' : 'Such Great Heights' }
@@ -103,66 +105,87 @@ function HTTP_GET(hostname, path, callback) {
   });
 }
 
-// /*
-//  * Poll the appropriate sources to find the favorite artists and songs
-//  * of a user, then call a callback
-//  */
-// function getFavoriteTracks(facebookAPI, facebookID, callback) {
+/*
+ * Poll the appropriate sources to find the favorite artists and songs
+ * of a user, then call a callback
+ */
+function getFacebookFavoriteArtists(facebookUser, callback) {
 
-//   // Use the Facebook API to get all the music likes of a user
-//   facebookAPI(facebookID + '/music').get(function (err, json) {
-//     var tracks = [];
-//     var loadedTracks = 0;
+  // Use the Facebook API to get all the music likes of a user
+  var options = {
+      host: 'graph.facebook.com',
+      port: 443,
+      path: '/me/music?access_token=' + facebookUser.access_token
+    };
+  https.get(options, function(fbres) {
+      var output = '';
+      fbres.on('data', function (chunk) {
+          //console.log("CHUNK:" + chunk);
+          output += chunk;
+      });
 
-//     // Parse the artist names out of the JSON
-//     parseArtistNames(json, function(artists) {
+      fbres.on('end', function() {
+        console.log("favtracks output for %s:", facebookUser.name);
+        console.log(output);
+        var data = JSON.parse(output).data;
+        console.log(JSON.stringify(data.map(function (artist) { return artist.name;}), undefined, 2));
+        
+      });
+  });
 
-//       // If there were no artists, return
-//       if (!artists.length) { 
-//         console.log("No Artists Returned for facebook ID:" + facebookID);
-//         return;
-//       }
+  // facebookAPI(facebookID + '/music').get(function (err, json) {
+  //   var tracks = [];
+  //   var loadedTracks = 0;
 
-//       // For each artist
-//       artists.forEach(function(artist) {
+  //   // Parse the artist names out of the JSON
+  //   parseArtistNames(json, function(artists) {
 
-//         // Create a spotify search
-//         var search = new sp.Search("artist:" + artist);
-//         search.trackCount = 1; // we're only interested in the first result for now;
+  //     // If there were no artists, return
+  //     if (!artists.length) { 
+  //       console.log("No Artists Returned for facebook ID:" + facebookID);
+  //       return;
+  //     }
 
-//         // Execute the search
-//         search.execute();
+  //     // For each artist
+  //     artists.forEach(function(artist) {
 
-//         // When the search has been completed
-//         search.once('ready', function() {
+  //       // Create a spotify search
+  //       var search = new sp.Search("artist:" + artist);
+  //       search.trackCount = 1; // we're only interested in the first result for now;
 
-//           // If there aren't any searches
-//           if(!search.tracks.length) {
-//               console.error('there is no track to play :[');
-//               return;
+  //       // Execute the search
+  //       search.execute();
 
-//           } else {
+  //       // When the search has been completed
+  //       search.once('ready', function() {
 
-//             // Add the track to the rest of the tracks
-//             tracks = tracks.concat(search.tracks);
-//           }
+  //         // If there aren't any searches
+  //         if(!search.tracks.length) {
+  //             console.error('there is no track to play :[');
+  //             return;
 
-//           // Keep track of how far we've come
-//           loadedTracks++;
+  //         } else {
 
-//           // If we've checked all the artists
-//           if (loadedTracks == artists.length) {
-//             // Shuffle up the tracks
-//             shuffle(tracks);
+  //           // Add the track to the rest of the tracks
+  //           tracks = tracks.concat(search.tracks);
+  //         }
 
-//             // Call our callback
-//             callback(tracks);
-//           }
-//         });
-//       });
-//     });
-//   });
-// }
+  //         // Keep track of how far we've come
+  //         loadedTracks++;
+
+  //         // If we've checked all the artists
+  //         if (loadedTracks == artists.length) {
+  //           // Shuffle up the tracks
+  //           shuffle(tracks);
+
+  //           // Call our callback
+  //           callback(tracks);
+  //         }
+  //       });
+  //     });
+  //   });
+  // });
+}
 
 
 http.createServer(app).listen(app.get('port'), function(){
