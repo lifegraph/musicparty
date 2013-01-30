@@ -63,14 +63,12 @@ app.get('/:localEntranceId/:facebookID/tracks', function(req, res) {
   // Package up the songs into JSON?
 
   // Send them out
-  });
-});
-
-  var tracks = {'tracks' : [
+    var tracks = {'tracks' : [
       {'artist' : 'Incubus', 'song' : 'Drive' } , {'artist' : 'The Postal Service', 'song' : 'Such Great Heights' }
   ]};
 
   res.send(tracks);
+  });
 });
 
 /*
