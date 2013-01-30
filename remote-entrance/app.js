@@ -42,9 +42,9 @@ app.configure('development', function(){
 });
 
 
-app.get('/:localEntranceId/:facebookID/tracks', function(req, res) {
+app.get('/:localEntranceId/:deviceId/tracks', function(req, res) {
   console.log(JSON.stringify(gateKeeper, undefined, 2));
-  gateKeeper.requestUser(req.params.facebookID, function(error, user) {
+  gateKeeper.requestUser(req.params.deviceId, function(error, user) {
     // If we have an error, then there was a problem with the HTTP call
     // or the user isn't in the db and they need to sync
     if (error) {
@@ -102,6 +102,67 @@ function HTTP_GET(hostname, path, callback) {
     });
   });
 }
+
+// /*
+//  * Poll the appropriate sources to find the favorite artists and songs
+//  * of a user, then call a callback
+//  */
+// function getFavoriteTracks(facebookAPI, facebookID, callback) {
+
+//   // Use the Facebook API to get all the music likes of a user
+//   facebookAPI(facebookID + '/music').get(function (err, json) {
+//     var tracks = [];
+//     var loadedTracks = 0;
+
+//     // Parse the artist names out of the JSON
+//     parseArtistNames(json, function(artists) {
+
+//       // If there were no artists, return
+//       if (!artists.length) { 
+//         console.log("No Artists Returned for facebook ID:" + facebookID);
+//         return;
+//       }
+
+//       // For each artist
+//       artists.forEach(function(artist) {
+
+//         // Create a spotify search
+//         var search = new sp.Search("artist:" + artist);
+//         search.trackCount = 1; // we're only interested in the first result for now;
+
+//         // Execute the search
+//         search.execute();
+
+//         // When the search has been completed
+//         search.once('ready', function() {
+
+//           // If there aren't any searches
+//           if(!search.tracks.length) {
+//               console.error('there is no track to play :[');
+//               return;
+
+//           } else {
+
+//             // Add the track to the rest of the tracks
+//             tracks = tracks.concat(search.tracks);
+//           }
+
+//           // Keep track of how far we've come
+//           loadedTracks++;
+
+//           // If we've checked all the artists
+//           if (loadedTracks == artists.length) {
+//             // Shuffle up the tracks
+//             shuffle(tracks);
+
+//             // Call our callback
+//             callback(tracks);
+//           }
+//         });
+//       });
+//     });
+//   });
+// }
 
 
 http.createServer(app).listen(app.get('port'), function(){
