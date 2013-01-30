@@ -20,10 +20,9 @@ var fakeUID = "0x010x010x010x01"
 
 console.log("Hi! listening to " + arduino_port);
 
-console.log("WTF");	
-
 // After initialized, when we get a tag from the RF Reader
 serialPort.on("data", function (data) {
+
   // Print out the tag data
   console.log("ID Data received: : "+ data);
 
@@ -45,23 +44,17 @@ serialPort.on("data", function (data) {
       return;
     }
 
-    HTTP_GET('localhost', '/' + fakeUID + '/' + trying_to_connect_uid, function(error, facebookID) {
-    	trackRecord.playFavorites(facebookID);
+    HTTP_GET('entranceapp.herokuapp.com', '/' + fakeUID + '/' + encodeURIComponent(trying_to_connect_uid) + "/tracks", function(error, jsonResponse) {
+    	if (error) {
+    		console.log("Error fetching tracks from Entrance backend: " + error.message);
+    		return;
+    	}
+
+    	trackRecord.playTracks(jsonResponse);
+    	console.log("Response from entrance backend: " + jsonResponse);
+    	set_last_uid_to_connect(trying_to_connect_uid);
+
     });
-
-    // gateKeeper.authenticate(trying_to_connect_uid, function(error, facebookID) {
-
-    //   if (facebookID) {
-    //     console.log("VALID TAG: IT'S GO TIME FOR USERNAME: " + facebookID);
-    //     trackRecord.playFavorites(facebookID);
-    //     console.log("Streaming: " + trackRecord.isStreaming);
-    //     set_last_uid_to_connect(trying_to_connect_uid);
-    //   }
-    //   else if(error) {
-    //     console.log("Error with auth: " + error.message);
-    //     return;
-    //   } 
-    // });
   }
 });
 
@@ -79,5 +72,35 @@ function set_last_uid_to_connect(uid) {
 function clear_last_uid() {
     last_uid_to_connect = null;
 }
-trackRecord.connectSpotify(function(spotifySession) { console.log("Succesfully connected to spotify."); trackRecord.playFavorites(fakeUID)});
-// trackRecord.playFavorites(fakeUID);
+
+/*
+ * Wrapper method for HTTP GETs
+ */
+function HTTP_GET(hostname, path, callback) {
+  console.log("Making GET to " + hostname + path);
+  // Configure our get request
+  var options = {
+    host: hostname,
+    path: path
+  };
+
+   http.get(options, function(res) {
+    var output = '';
+    var jsonResult;
+    res.on('error', function(e) {
+      console.log('HTTP Error!');
+      callback(e, null);
+    });
+
+    res.on('data', function(chunk) {
+      output+= chunk;
+    });
+
+    res.on('end', function() {
+      console.log("Server Response: " + output);
+      console.log("Status Code: " + res.statusCode);
+      callback (null, JSON.parse(output));
+    });
+  }); // end of http.get
+}
+trackRecord.connectSpotify(function(spotifySession) { console.log("Succesfully connected to spotify.");});
