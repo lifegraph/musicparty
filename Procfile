@@ -1,1 +1,1 @@
-web: node entrance-remote/app.js
+web: node remote-entrance/app.js
