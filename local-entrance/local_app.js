@@ -18,7 +18,10 @@ var clear_timeout; // clear timeout object itself to allow reset of last tagged 
 // var my_fbid = "timcameronryan";
 var fakeUID = "0x010x010x010x01"
 
-console.log("Hi! listening to " + arduino_port);
+serialPort.on("open", function (){
+	console.log("Successfully opened arduino port.")
+	trackRecord.connectSpotify(function(spotifySession) { console.log("Succesfully connected to spotify.");});
+});
 
 // After initialized, when we get a tag from the RF Reader
 serialPort.on("data", function (data) {
@@ -104,4 +107,3 @@ function HTTP_GET(hostname, path, port, callback) {
     });
   }); // end of http.get
 }
-trackRecord.connectSpotify(function(spotifySession) { console.log("Succesfully connected to spotify.");});

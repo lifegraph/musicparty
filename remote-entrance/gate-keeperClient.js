@@ -8,6 +8,8 @@ var gateKeeperHostname = 'fb-gate-keeper.herokuapp.com';
  */
  function requestUser(deviceID, callback) {
 
+  console.log("Requesting User For Device ID " + deviceID + " from GateKeeper...");
+
   // Configure our get request
   var options = {
     host: gateKeeperHostname,
@@ -26,7 +28,8 @@ var gateKeeperHostname = 'fb-gate-keeper.herokuapp.com';
     });
 
     res.on('end', function() {
-      console.log("Server Response: " + output);
+      // console.log("Server Response: " + output);
+      console.log("Response received from GateKeeper.");
       console.log("Status Code: " + res.statusCode);
       JSONResponse = JSON.parse(output);
       JSONResultParse(JSONResponse, callback);

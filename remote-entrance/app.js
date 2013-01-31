@@ -9,16 +9,20 @@ var express = require('express')
   , http = require('http')
   , https = require('https')
   , path = require('path')
-  , mongo = require('mongodb');
+  , Db = require('mongodb').Db
+  , assert = require('assert');
 
 var app = express();
 var hostUrl = 'http://entranceapp.herokuapp.com'
 var mongo = require('mongodb');
 var gateKeeper = require("./gate-keeperClient.js");
-var Db = mongo.Db;
+var db;
 var mongoUri = process.env.MONGOLAB_URI || 
   process.env.MONGOHQ_URL || 
   'mongodb://localhost/mydb'; 
+
+var streamingUsersDBNamespace = "streaming_users_db";
+var currentStreamingUsers;
 
 
 app.configure(function(){
@@ -44,39 +48,82 @@ app.configure('development', function(){
 
 
 app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
-  console.log(JSON.stringify(gateKeeper, undefined, 2));
+
   gateKeeper.requestUser(req.params.deviceId, function (error, user) {
     // If we have an error, then there was a problem with the HTTP call
     // or the user isn't in the db and they need to sync
     if (error) {
       console.log("We had an error with Gatekeeper: " + error.message);
+
+      // Send something to the local entrance device to let it know if
+      // a.) there was a network error or b.) the device needs to sync
     } 
 
-    // Else, we have the user... wooh!
-    else if (user) {
-      console.log("We got the user: " + user);
+    // Grab those who are already in the room 
+    getCurrentStreamers(req.params.localEntranceId, function (error, currentStreamingUsers) {
+
+      console.log(currentStreamingUsers);
+      // If this person is already in the room, delete them
+      if (currentStreamingUsers.indexOf(user) == 0) {
+
+      console.log("User already in room!");
+      removeUserFromStreamingSession(user);
+
+      // Update the current streaming users
+      delete currentStreamingUsers[user];
+
+      // If there are no more users 
+      if (!currentStreamingUsers.length) {
+
+        console.log("No users remaining in room!");
+
+        // Let the client know to stop playing
+        return res.send(stringify({'action' : 'stop'}));
+      }
     }
 
-    // Once we have the user, retrieve all the user source preferences from the db 
-    // (we may need several access tokens for different services?)
+      console.log("User NOT already in room!");
 
-    // Retrieve appropriate songs from each of the sources
+      // Add the user to the array
+      console.log("Adding user to array.");
 
-    // Package up the songs into JSON?
+      currentStreamingUsers.push(user);
 
-  getFacebookFavoriteArtists(user, null);
+      // Push the array back into the db
+      setCurrentStreamers(req.params.localEntranceId, currentStreamingUsers, function(err, result) {
 
-    // Send them out
-    var tracks = {
-      'tracks' : [
-        { 'artist' : 'Incubus', 'song' : 'Drive' } , 
-        { 'artist' : 'The Postal Service', 'song' : 'Such Great Heights'} ,
-        { 'artist' : 'Death Cab For Cutie', 'song' : 'Summer Skin'},
-        { 'artist' : 'The Last Bison', 'song' : 'Switzerland'} ,
-        { 'artist' : 'Passion Pit', 'song' : 'Silvia'}
-    ]};
 
-    res.send(tracks);
+        getCurrentStreamers(req.params.localEntranceId, function (error, currentStreamingUsers) {
+
+          console.log("Streamers after insert: " + currentStreamingUsers);
+
+          // Grab the tracks for these new users
+          getTracksForUsers(currentStreamingUsers);
+
+
+          // Once we have the user, retrieve all the user source preferences from the db 
+          // (we may need several access tokens for different services?)
+
+          // Retrieve appropriate songs from each of the sources
+
+          // Package up the songs into JSON?
+
+          // getFacebookFavoriteArtists(user, null);
+
+          // Send them out
+          var tracks = {
+            'tracks' : [
+              { 'artist' : 'Incubus', 'song' : 'Drive' } , 
+              { 'artist' : 'The Postal Service', 'song' : 'Such Great Heights'} ,
+              { 'artist' : 'Death Cab For Cutie', 'song' : 'Summer Skin'},
+              { 'artist' : 'The Last Bison', 'song' : 'Switzerland'} ,
+              { 'artist' : 'Passion Pit', 'song' : 'Silvia'}
+          ]};
+
+          res.send(tracks);
+        });
+      });
+    });
   });
 });
 
@@ -111,6 +158,10 @@ function HTTP_GET (hostname, path, callback) {
   });
 }
 
+function getTracksForUsers(users) {
+
+}
+
 /*
  * Poll the appropriate sources to find the favorite artists and songs
  * of a user, then call a callback
@@ -136,66 +187,83 @@ function getFacebookFavoriteArtists(facebookUser, callback) {
         console.log("favtracks output for %s:", facebookUser.name);
         console.log(output);
         var data = JSON.parse(output).data;
-        console.log(JSON.stringify(data.map(function (artist) { return artist.name;}), undefined, 2));
+        console.log(stringify(data.map(function (artist) { return artist.name;})));
         
       });
   });
-
-  // facebookAPI(facebookID + '/music').get(function (err, json) {
-  //   var tracks = [];
-  //   var loadedTracks = 0;
-
-  //   // Parse the artist names out of the JSON
-  //   parseArtistNames(json, function(artists) {
-
-  //     // If there were no artists, return
-  //     if (!artists.length) { 
-  //       console.log("No Artists Returned for facebook ID:" + facebookID);
-  //       return;
-  //     }
-
-  //     // For each artist
-  //     artists.forEach(function(artist) {
-
-  //       // Create a spotify search
-  //       var search = new sp.Search("artist:" + artist);
-  //       search.trackCount = 1; // we're only interested in the first result for now;
-
-  //       // Execute the search
-  //       search.execute();
-
-  //       // When the search has been completed
-  //       search.once('ready', function() {
-
-  //         // If there aren't any searches
-  //         if(!search.tracks.length) {
-  //             console.error('there is no track to play :[');
-  //             return;
-
-  //         } else {
-
-  //           // Add the track to the rest of the tracks
-  //           tracks = tracks.concat(search.tracks);
-  //         }
-
-  //         // Keep track of how far we've come
-  //         loadedTracks++;
-
-  //         // If we've checked all the artists
-  //         if (loadedTracks == artists.length) {
-  //           // Shuffle up the tracks
-  //           shuffle(tracks);
-
-  //           // Call our callback
-  //           callback(tracks);
-  //         }
-  //       });
-  //     });
-  //   });
-  // });
 }
 
+// Start database and get things running
+console.log("connecting to database at " + app.get('dburl'));
+Db.connect(app.get('dburl'), {}, function (err, _db) {
 
-http.createServer(app).listen(app.get('port'), function(){
-  console.log("Express server listening on port " + app.get('port'));
+  // Escape our closure.
+  db = _db;
+
+  // Define some errors.
+  db.on("error", function(error){
+    console.log("Error connecting to MongoLab.");
+    console.log(error);
+  });
+
+  console.log("Connected to mongo.");
+
+  // Start server.
+  http.createServer(app).listen(app.get('port'), function(){
+    console.log("Express server listening on port " + app.get('port'));
+  });
 });
+
+function setCurrentStreamers(localDeviceId, streamingUsers, callback) {
+  db.collection(streamingUsersDBNamespace, function(err, collection) {
+    console.log("Setting streaming users: " + streamingUsers);    
+    if (err) callback(err);
+    else {
+      collection.insert({localDeviceId: localDeviceId}, {
+        'localDeviceId': localDeviceId,
+        'streamingUsers': streamingUsers
+      }, {upsert:true}, callback);
+    }
+  }); 
+}
+
+function getCurrentStreamers(localDeviceId, callback) {
+  db.collection(streamingUsersDBNamespace, function(err, collection) {
+    collection.findOne({'localDeviceId': localDeviceId}, function(err, item) {
+      if (!item) {
+        callback(err, []);
+        return;
+      } 
+      console.log("Result: " + stringify(item));
+      callback(err, item.streamingUsers);
+    });
+  });
+}
+
+// function getStreamers(localDeviceId, callback) {
+//   db.collection(streamingUsersDBNamespace, function (err, collection) {
+//     collection.findOne({
+//       'localDeviceId': localDeviceId,
+//     }, function(err, sessionStatus) {
+//         if (err) callback(err, null);
+//         else if (sessionStatus) callback(null, sessionStatus);
+//         else callback(null, []);
+//     });
+//   });
+// }
+
+// function setStreamers (localDeviceId, streamers, callback) {
+//   db.collection(streamingUsersDBNamespace, function(err, collection) {
+//     collection.update({'localDeviceId': localDeviceId}, {
+//       'streamers': streamers,
+//     }, {safe: true, upsert: true}, callback);
+//   });
+// }
+
+function removeUserFromStreamingSession(user, localDeviceId) {
+
+}
+
+function stringify(object) {
+  return JSON.stringify(object, undefined, 2);
+}
