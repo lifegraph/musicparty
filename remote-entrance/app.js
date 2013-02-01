@@ -15,8 +15,7 @@ var express = require('express')
   , assert = require('assert');
 
 var app = express();
-var hostUrl = 'http://entranceapp.herokuapp.com'
-var mongo = require('mongodb');
+var hostUrl = 'http://entranceapp.herokuapp.com';
 var gateKeeper = require("./gate-keeperClient.js");
 var db;
 
