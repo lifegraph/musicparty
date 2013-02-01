@@ -11,7 +11,7 @@ var express = require('express')
   , path = require('path')
   , StreamingSession = require('./models/StreamingSession')
   , mongoose = require('mongoose')
-  // , sp = require('libspotify')
+  , sp = require('libspotify')
   , assert = require('assert');
 
 var app = express();
@@ -45,13 +45,6 @@ app.configure('development', function(){
 
 app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
 
-  if (i%2) {
-    return res.send( {{"action" : "continue" }, "tracks" : [ {"artist" : "Passion Pit", "song" : "Silvia"}]});
-  }else {
-    return res.send( {action : 'stop'});
-  }
-
-
   gateKeeper.requestUser(req.params.deviceId, function (error, user) {
     // If we have an error, then there was a problem with the HTTP call
     // or the user isn't in the db and they need to sync
@@ -80,7 +73,11 @@ app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
               console.log("No users remaining in room!");
 
               // Let the client know to stop playing
-              return res.send(stringify({'action' : 'stop'}));
+              return res.json({'action' : 'stop', 'tracks' : null});
+            } else {
+              // User left room, but people are still in room
+              // TODO compute new tracks, send them down
+              return res.json({'action' : 'continue', 'tracks' : null});
             }
           });
         } 
@@ -105,8 +102,9 @@ app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
             // getFacebookFavoriteArtists(user, null);
             getFacebookFavoriteArtists(user, function (artists) {
               getSongsFromArtists(artists, function(songs) {
+                console.log("SONGS:");
                 console.log(songs);
-                res.send(songs);
+                res.json({'action': 'play', 'tracks': songs});
               });
             });  
           });
@@ -114,6 +112,29 @@ app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
       });
     });
   });
+});
+
+app.get('/testtrackstream', function(req, res) {
+  var url = "spotify:track:63vL5oxWrlvaJ0ayNaQnbX";
+
+  var track = sp.Track.getFromUrl(url); 
+  track.on('ready', function() {
+    // Grab the player
+    var player = spotifySession.getPlayer();
+
+    // Load the given track
+    player.load(track);
+
+    // Start playing it
+    player.play();
+    player.pipe(res);
+    player.once('track-end', function() {
+      player.stop();
+      res.end();
+    });
+
+  });
+  
 });
 
 /*
@@ -186,6 +207,7 @@ function getFacebookFavoriteArtists(facebookUser, callback) {
 
 function getSongsFromArtists(artists, callback) {
       var loadedTracks = 0;
+      var tracks = [];
       if (!artists.length) {
         console.log("There are no artists.");
         return callback([]);
@@ -193,7 +215,7 @@ function getSongsFromArtists(artists, callback) {
 
       // For each artist
       artists.forEach(function(artist) {
-
+        // console.log("searching for artist: " + artist)
         // Create a spotify search
         var search = new sp.Search("artist:" + artist);
         search.trackCount = 1; // we're only interested in the first result for now;
@@ -203,28 +225,34 @@ function getSongsFromArtists(artists, callback) {
 
         // When the search has been completed
         search.once('ready', function() {
-
           // If there aren't any searches
           if(!search.tracks.length) {
-              console.error('there is no track to play :[');
-              return;
-
+              console.error('there is no track to play :[ for artist ' + artist);
           } else {
-
             // Add the track to the rest of the tracks
-            tracks = tracks.concat(search.tracks);
+            console.log(search.tracks);
+            console.log(search.tracks[0]);
+            for (var i = 0; i < search.tracks.length; i++) {
+              if (search.tracks[i].availability == "AVAILABLE") {
+                tracks.push(search.tracks[i]);
+              }
+            }
+            // tracks = tracks.concat(search.tracks);
           }
 
           // Keep track of how far we've come
           loadedTracks++;
+          console.log("loaded: " + loadedTracks + "/" + artists.length + " : " + tracks.length);
 
           // If we've checked all the artists
           if (loadedTracks == artists.length) {
             // Shuffle up the tracks
-            shuffle(tracks);
+            // shuffle(tracks);
 
+            // sort in decreasing popularity so most popular is first
+            tracks.sort(function(a, b) {return b.popularity - a.popularity});
             // Call our callback
-            callback(tracks);
+            callback(tracks.map(function(track) { return track.getUrl();}));
           }
         });
       });
@@ -336,6 +364,8 @@ function initializeServerAndDatabase() {
 
   // Start database and get things running
   console.log("connecting to database at " + app.get('dburl'));
+
+  // console.log("EV: " + ENV['TEST']);
   mongoose.connect(app.get('dburl'));
 
   db = mongoose.connection;
@@ -344,17 +374,13 @@ function initializeServerAndDatabase() {
   db.once('open', function callback () {
     // yay!
     console.log("Connected to mongo.");
-
-http.createServer(app).listen(app.get('port'), function(){
+    connectSpotify(function(spotifySession) {
+      console.log("Connected to Spotify.");
+      // Start server.
+      http.createServer(app).listen(app.get('port'), function(){
         console.log("Express server listening on port " + app.get('port'));
       });
-    // connectSpotify(function(spotifySession) {
-    //   console.log("Connected to Spotify.");
-    //   // Start server.
-    //   // http.createServer(app).listen(app.get('port'), function(){
-    //   //   console.log("Express server listening on port " + app.get('port'));
-    //   // });
-    // });
+    });
   });
 }
 /*
