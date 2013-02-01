@@ -9,7 +9,8 @@ var express = require('express')
   , http = require('http')
   , https = require('https')
   , path = require('path')
-  , Db = require('mongodb').Db
+  , StreamingSession = require('./models/StreamingSession')
+  , mongoose = require('mongoose')
   , assert = require('assert');
 
 var app = express();
@@ -17,13 +18,6 @@ var hostUrl = 'http://entranceapp.herokuapp.com'
 var mongo = require('mongodb');
 var gateKeeper = require("./gate-keeperClient.js");
 var db;
-var mongoUri = process.env.MONGOLAB_URI || 
-  process.env.MONGOHQ_URL || 
-  'mongodb://localhost/mydb'; 
-
-var streamingUsersDBNamespace = "streaming_users_db";
-var currentStreamingUsers;
-
 
 app.configure(function(){
   app.set('port', process.env.PORT || 3000);
@@ -60,20 +54,20 @@ app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
     } 
 
     // Grab those who are already in the room 
-    getCurrentStreamers(req.params.localEntranceId, function (error, currentStreamingUsers) {
+    getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
 
-      console.log("Number of streaming users:" + currentStreamingUsers.length);
+      console.log("Number of streaming users:" + currentStreamingUsers.streamingUsers.length);
 
       console.log("User we're searching for: " + stringify(user));
       // If this person is already in the room, delete them
-      if (indexOfStreamingUser(currentStreamingUsers, user) != -1) {
+      if (indexOfStreamingUser(user) != -1) {
 
         console.log("User already in room!");
 
         console.log("Deleting user from room.")
         // Update the current streaming users
 
-        removeUserFromStreamingUsers(req.params.localEntranceId, currentStreamingUsers, user, function () {
+        removeUserFromStreamingUsers(req.params.localEntranceId, user, function () {
 
           console.log("Users after deletion: " + stringify(currentStreamingUsers));
 
@@ -190,27 +184,6 @@ function getFacebookFavoriteArtists(facebookUser, callback) {
   });
 }
 
-// Start database and get things running
-console.log("connecting to database at " + app.get('dburl'));
-Db.connect(app.get('dburl'), {}, function (err, _db) {
-
-  // Escape our closure.
-  db = _db;
-
-  // Define some errors.
-  db.on("error", function(error){
-    console.log("Error connecting to MongoLab.");
-    console.log(error);
-  });
-
-  console.log("Connected to mongo.");
-
-  // Start server.
-  http.createServer(app).listen(app.get('port'), function(){
-    console.log("Express server listening on port " + app.get('port'));
-  });
-});
-
 function getUserFromStreamers(localEntranceId, userJSON, callback) {
   getCurrentStreamers(localEntranceId, function(err, currentStreamers) {
     if (!currentStreamers || err) {
@@ -221,68 +194,102 @@ function getUserFromStreamers(localEntranceId, userJSON, callback) {
   });
 }
 
-function setCurrentStreamers(localEntranceId, streamingUsers, callback) {
-  var recordToStore = {'localEntranceId' : localEntranceId, 'streamingUsers' : streamingUsers};
-  db.collection(streamingUsersDBNamespace, function(err, collection) {  
+function setCurrentStreamingSession(localEntranceId, streamingSession, callback) {
+  getCurrentStreamingSession(localEntranceId, function (err, streamingSession) {
     if (err) callback(err);
-    else {
-      collection.update(recordToStore, {upsert:true}, callback);
-    }
-  }); 
-}
 
-function getCurrentStreamers(localEntranceId, callback) {
-  db.collection(streamingUsersDBNamespace, function(err, collection) {
-    collection.findOne({'localEntranceId': localEntranceId}, function(err, item) {
-      if (!item) {
-        callback(err, []);
-        return;
-      } 
-      callback(err, item.streamingUsers);
+    streamingSession.streamingUsers = streamingUsers;
+    streamingSession.save(function (err) {
+      if (err) callback(err);
     });
   });
 }
 
-function addUserToStreamingUsers(localEntranceId, streamingUsers, user, callback) {
+function getCurrentStreamingSession(localEntranceId, callback) {
+  StreamingSession.findOne( { localEntranceId : localEntranceId }, function(err, streamingSession) {
+    if (err) {
+      callback (err, null);
+    } 
+    else {
+      callback(null, streamingSession);
+    }
+  })
+}
+
+function addUserToStreamingUsers(localEntranceId, user, callback) {
+  getCurrentStreamingSession(localEntranceId, function (err, streamingSession) {
+    streamingSession.streamingUsers.push(user);
+    setCurrentStreamingSession(localEntranceId)
+  });
   streamingUsers.push(user);
   setCurrentStreamers(localEntranceId, streamingUsers, callback);
 }
 
-function removeUserFromStreamingUsers(localEntranceId, streamingUsers, userInQuestion, callback) {
+function removeUserFromStreamingUsers(localEntranceId, userInQuestion, callback) {
 
-  for (var i = 0; i < streamingUsers.length; i++) {
-    if (streamingUsers[i].id == userInQuestion.id) {
-      streamingUsers.splice(i, 1);
-      break;
+  getCurrentStreamingSession(localEntranceId, function (err, streamingSession) {
+    for (var i = 0; i < streamingSession.streamingUsers.length; i++) {
+      if (streamingSession.streamingUsers[i].id == userInQuestion.id) {
+        streamingSession.streamingUsers.splice(i, 1);
+        break;
+      }
     }
-  }
 
-  db.collection(streamingUsersDBNamespace, function(err, collection) {
-        collection.remove({'_id':new BSON.ObjectID(id)}, {safe:true}, function(err, result) {
-            if (err) {
-                res.send({'error':'An error has occurred - ' + err});
-            } else {
-                console.log('' + result + ' document(s) deleted');
-                res.send(req.body);
-            }
-        });
-    });
-
-  setCurrentStreamers(localEntranceId, streamingUsers, callback);
+    setCurrentStreamingSession(localEntranceId, streamingSession, callback);
+  });
 }
 
-function indexOfStreamingUser (streamingUsers, userInQuestion) {
+function indexOfStreamingUser (userInQuestion) {
   assert(streamingUsers, "streaming users must not be null");
   assert(userInQuestion, "user must not be null");
-  for (var i = 0; i < streamingUsers.length; i++) {
-    if (streamingUsers[i].id == userInQuestion.id) {
-      return i;
+  getCurrentStreamingSession(function (err, streamingSession) {
+    if (err) return -1;
+    for (var i = 0; i < streamingSession.streamingUsers.length; i++) {
+      if (streamingSession.streamingUsers[i].id == userInQuestion.id) {
+        return i;
+      }
     }
-  }
-  return -1;
+    return -1;
+  });
 }
 
 
 function stringify(object) {
   return JSON.stringify(object, undefined, 2);
 }
+
+function initializeServerAndDatabase() {
+
+  // Start database and get things running
+  console.log("connecting to database at " + app.get('dburl'));
+
+  db = mongoose.connection;
+
+  db.on('error', console.error.bind(console, 'connection error:'));
+  db.once('open', function callback () {
+    // yay!
+    console.log("Connected to mongo.");
+
+    // var ss = StreamingSession({localEntranceId : '5'});
+    // console.log("SS: " + ss);
+    // ss.save(function(err) {
+    //   StreamingSession.findOne({localEntranceId : '5'}, function(err, item) {
+    //     console.log("ITEM: " + item);
+    //     item.streamingUsers = ['food', 'yum'];
+    //     item.save(function(err) {
+    //       StreamingSession.find({localEntranceId : '5'}, function(err, item) {
+    //         console.log("New item: " + item);
+    //       });
+    //     })
+    //    });
+    // });
+
+    // Start server.
+    http.createServer(app).listen(app.get('port'), function(){
+      console.log("Express server listening on port " + app.get('port'));
+    });
+  });
+}
+
+
+initializeServerAndDatabase();
