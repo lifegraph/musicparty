@@ -18,6 +18,7 @@ var app = express();
 var hostUrl = 'http://entranceapp.herokuapp.com';
 var gateKeeper = require("./gate-keeperClient.js");
 var db;
+var spotifySession;
 
 app.configure(function(){
   app.set('port', process.env.PORT || 3000);
@@ -60,8 +61,6 @@ app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
 
         // If the 
         if (index != -1) {
-          console.log("User already in room!");
-
           console.log("User already in room... deleting user from room.")
           // Update the current streaming users
 
@@ -338,12 +337,39 @@ function initializeServerAndDatabase() {
     // yay!
     console.log("Connected to mongo.");
 
-    // Start server.
-    http.createServer(app).listen(app.get('port'), function(){
-      console.log("Express server listening on port " + app.get('port'));
+
+    connectSpotify(function(spotifySession) {
+      console.log("Connected to Spotify.");
+      // Start server.
+      http.createServer(app).listen(app.get('port'), function(){
+        console.log("Express server listening on port " + app.get('port'));
+      });
     });
   });
 }
+/*
+ * Beings a spotify session
+ */
+function connectSpotify (callback) {
+  // Create a spotify session wth our api key
+  console.log(process.env.SPOTIFY_KEYPATH);
+  spotifySession = new sp.Session({
+    applicationKey: process.env.SPOTIFY_KEYPATH
+  });
+
+  console.log("Connecting to Spotify...")
+  // Log in with our credentials
+  spotifySession.login(process.env.SPOTIFY_USERNAME, process.env.SPOTIFY_PASSWORD);
+
+  var player = spotifySession.getPlayer();  
+
+  // Once we're logged in, continue with the callback
+  spotifySession.once('login', function (err) {
+    if (err) return console.error('Error:', err);
+    callback(spotifySession);
+  });
+}
+
 
 
 initializeServerAndDatabase();

@@ -16,7 +16,7 @@ var clear_timeout; // clear timeout object itself to allow reset of last tagged 
 
 // var my_fbid = "jon.mckay";
 // var my_fbid = "timcameronryan";
-var fakeUID = "0x010x010x010x01"
+var fakeUID = "0x010x010x010x02"
 
 serialPort.on("open", function (){
 	console.log("Successfully opened arduino port.")
@@ -47,19 +47,19 @@ serialPort.on("data", function (data) {
       return;
     }
 
-    HTTP_GET('localhost', '/' + fakeUID + '/' + encodeURIComponent(trying_to_connect_uid) + "/tracks", 3000, function(error, jsonResponse) {
+    HTTP_GET('entranceapp.herokuapp.com', '/' + fakeUID + '/' + encodeURIComponent(trying_to_connect_uid) + "/tracks", 80, function(error, jsonResponse) {
     	if (error) {
     		console.log("Error fetching tracks from Entrance backend: " + error.message);
     		return;
     	}
 
-    	switch(jsonResponse.action) {
-    		case 'continue':
-    			// This needs to 
-    			trackRecord.playTracks(jsonResponse);
-    		case 'stop':
+    	// switch(jsonResponse.action) {
+    	// 	case 'continue':
+    	// 		// This needs to 
+    	// 		trackRecord.playTracks(jsonResponse);
+    	// 	case 'stop':
 
-    	}
+    	// }
 
     	
     	console.log("Response from entrance backend: " + jsonResponse);
@@ -88,30 +88,32 @@ function clear_last_uid() {
  * Wrapper method for HTTP GETs
  */
 function HTTP_GET(hostname, path, port, callback) {
-  console.log("Making GET to " + hostname + path);
-  // Configure our get request
-  var options = {
-  	port: (port ? port : 80),
-    host: hostname,
-    path: path
-  };
+	  console.log("Making GET to " + hostname + path);
+	  // Configure our get request
+	  var options = {
+	    host: hostname,
+	    path: path
+	  };
 
-   http.get(options, function(res) {
-    var output = '';
-    var jsonResult;
-    res.on('error', function(e) {
-      console.log('HTTP Error!');
-      callback(e, null);
-    });
+  	if (port) options.port = port;
 
-    res.on('data', function(chunk) {
-      output+= chunk;
-    });
 
-    res.on('end', function() {
-      console.log("Server Response: " + output);
-      console.log("Status Code: " + res.statusCode);
-      callback (null, JSON.parse(output));
-    });
-  }); // end of http.get
+	http.get(options, function(res) {
+	var output = '';
+	var jsonResult;
+	res.on('error', function(e) {
+	  console.log('HTTP Error!');
+	  callback(e, null);
+	});
+
+	res.on('data', function(chunk) {
+	  output+= chunk;
+	});
+
+	res.on('end', function() {
+	  console.log("Server Response: " + output);
+	  console.log("Status Code: " + res.statusCode);
+	  callback (null, JSON.parse(output));
+	});
+	}); // end of http.get
 }
