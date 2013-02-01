@@ -1,3 +1,5 @@
 .DS_Store
 /node_modules
 /local-entrance/.DS_Store
+/local-entrance/node_modules
+/remote-entrance/node_modules
