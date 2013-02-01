@@ -11,6 +11,7 @@ var express = require('express')
   , path = require('path')
   , StreamingSession = require('./models/StreamingSession')
   , mongoose = require('mongoose')
+  , sp = require('libspotify')
   , assert = require('assert');
 
 var app = express();
@@ -95,26 +96,84 @@ app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
 
               // Package up the songs into JSON?
 
-              // getFacebookFavoriteArtists(user, null);
-
-              // Send them out
-            var tracks = {
-              'tracks' : [
-                { 'artist' : 'Incubus', 'song' : 'Drive' } , 
-                { 'artist' : 'The Postal Service', 'song' : 'Such Great Heights'} ,
-                { 'artist' : 'Death Cab For Cutie', 'song' : 'Summer Skin'},
-                { 'artist' : 'The Last Bison', 'song' : 'Switzerland'} ,
-                { 'artist' : 'Passion Pit', 'song' : 'Silvia'}
-              ]};
-
-
-            res.send(tracks);
+            // getFacebookFavoriteArtists(user, null);
+            getFacebookFavoriteArtists(user, function (artists) {
+              getSongsFromArtists(artists, function(songs) {
+                console.log(songs);
+                res.send(songs);
+              });
+            });  
           });
         }
-      }); 
+      });
     });
   });
 });
+
+/**
+ * Gets the songs associated with each artist in the array artists.
+ */
+
+function getSongsFromArtists(artists, callback) {
+      var loadedTracks = 0;
+      if (!artists.length) {
+        console.log("There are no artists.");
+        return callback([]);
+      }
+
+      // For each artist
+      artists.forEach(function(artist) {
+
+        // Create a spotify search
+        var search = new sp.Search("artist:" + artist);
+        search.trackCount = 1; // we're only interested in the first result for now;
+
+        // Execute the search
+        search.execute();
+
+        // When the search has been completed
+        search.once('ready', function() {
+
+          // If there aren't any searches
+          if(!search.tracks.length) {
+              console.error('there is no track to play :[');
+              return;
+
+          } else {
+
+            // Add the track to the rest of the tracks
+            tracks = tracks.concat(search.tracks);
+          }
+
+          // Keep track of how far we've come
+          loadedTracks++;
+
+          // If we've checked all the artists
+          if (loadedTracks == artists.length) {
+            // Shuffle up the tracks
+            shuffle(tracks);
+
+            // Call our callback
+            callback(tracks);
+          }
+        });
+      });
+}
+
+/*
+ * Shuffles list in-place
+ */
+function shuffle(list) {
+  var i, j, t;
+  for (i = 1; i < list.length; i++) {
+    j = Math.floor(Math.random()*(1+i));  // choose j in [0..i]
+    if (j != i) {
+      t = list[i];                        // swap list[i] and list[j]
+      list[i] = list[j];
+      list[j] = t;
+    }
+  }
+}
 
 /*
  * Wrapper method for HTTP GETs
@@ -152,12 +211,12 @@ function getTracksForUsers(users) {
 }
 
 /*
- * Poll the appropriate sources to find the favorite artists and songs
- * of a user, then call a callback
+ * Poll Facebook to find the favorite artists
+ * of a user, then call a callback with the list of artists' names
  */
 function getFacebookFavoriteArtists(facebookUser, callback) {
 
-  console.log("ACCESS TOKEN: " + facebookUser.access_token);
+  // console.log("ACCESS TOKEN: " + facebookUser.access_token);
 
   // Use the Facebook API to get all the music likes of a user
   var options = {
@@ -173,11 +232,10 @@ function getFacebookFavoriteArtists(facebookUser, callback) {
       });
 
       fbres.on('end', function() {
-        console.log("favtracks output for %s:", facebookUser.name);
-        console.log(output);
+        // console.log("favtracks output for %s:", facebookUser.name);
+        // console.log(output);
         var data = JSON.parse(output).data;
-        console.log(stringify(data.map(function (artist) { return artist.name;})));
-        
+        callback(data.map(function (artist) { return artist.name;}));
       });
   });
 }
