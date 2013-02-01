@@ -11,7 +11,7 @@ var express = require('express')
   , path = require('path')
   , StreamingSession = require('./models/StreamingSession')
   , mongoose = require('mongoose')
-  // , sp = require('libspotify')
+  , sp = require('libspotify')
   , assert = require('assert');
 
 var app = express();
@@ -45,11 +45,11 @@ app.configure('development', function(){
 
 app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
 
-  if (i%2) {
-    return res.send( {{"action" : "continue" }, "tracks" : [ {"artist" : "Passion Pit", "song" : "Silvia"}]});
-  }else {
-    return res.send( {action : 'stop'});
-  }
+  // if (i%2) {
+  //   return res.send( {{"action" : "continue" }, "tracks" : [ {"artist" : "Passion Pit", "song" : "Silvia"}]});
+  // }else {
+  //   return res.send( {action : 'stop'});
+  // }
 
 
   gateKeeper.requestUser(req.params.deviceId, function (error, user) {
@@ -191,6 +191,7 @@ function getFacebookFavoriteArtists(facebookUser, callback) {
 
 function getSongsFromArtists(artists, callback) {
       var loadedTracks = 0;
+      var tracks = [];
       if (!artists.length) {
         console.log("There are no artists.");
         return callback([]);
@@ -206,8 +207,6 @@ function getSongsFromArtists(artists, callback) {
         // Execute the search
         search.execute();
 
-        var tracks = [];
-
         // When the search has been completed
         search.once('ready', function() {
           // If there aren't any searches
@@ -218,7 +217,9 @@ function getSongsFromArtists(artists, callback) {
             console.log(search.tracks);
             console.log(search.tracks[0]);
             for (var i = 0; i < search.tracks.length; i++) {
-              tracks.push(search.tracks[i]);
+              if (search.tracks[i].availability == "AVAILABLE") {
+                tracks.push(search.tracks[i]);
+              }
             }
             // tracks = tracks.concat(search.tracks);
           }
@@ -230,8 +231,10 @@ function getSongsFromArtists(artists, callback) {
           // If we've checked all the artists
           if (loadedTracks == artists.length) {
             // Shuffle up the tracks
-            shuffle(tracks);
+            // shuffle(tracks);
 
+            // sort in decreasing popularity so most popular is first
+            tracks.sort(function(a, b) {return b.popularity - a.popularity})
             // Call our callback
             callback(tracks);
           }
@@ -353,17 +356,13 @@ function initializeServerAndDatabase() {
   db.once('open', function callback () {
     // yay!
     console.log("Connected to mongo.");
-
-http.createServer(app).listen(app.get('port'), function(){
+    connectSpotify(function(spotifySession) {
+      console.log("Connected to Spotify.");
+      // Start server.
+      http.createServer(app).listen(app.get('port'), function(){
         console.log("Express server listening on port " + app.get('port'));
       });
-    // connectSpotify(function(spotifySession) {
-    //   console.log("Connected to Spotify.");
-    //   // Start server.
-    //   // http.createServer(app).listen(app.get('port'), function(){
-    //   //   console.log("Express server listening on port " + app.get('port'));
-    //   // });
-    // });
+    });
   });
 }
 /*
