@@ -62,67 +62,64 @@ app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
     // Grab those who are already in the room 
     getCurrentStreamers(req.params.localEntranceId, function (error, currentStreamingUsers) {
 
-      console.log(currentStreamingUsers);
+      console.log("Number of streaming users:" + currentStreamingUsers.length);
+
+      console.log("User we're searching for: " + stringify(user));
       // If this person is already in the room, delete them
-      if (currentStreamingUsers.indexOf(user) == 0) {
+      if (indexOfStreamingUser(currentStreamingUsers, user) != -1) {
 
-      console.log("User already in room!");
-      removeUserFromStreamingSession(user);
+        console.log("User already in room!");
 
-      // Update the current streaming users
-      delete currentStreamingUsers[user];
+        console.log("Deleting user from room.")
+        // Update the current streaming users
 
-      // If there are no more users 
-      if (!currentStreamingUsers.length) {
+        removeUserFromStreamingUsers(req.params.localEntranceId, currentStreamingUsers, user, function () {
 
-        console.log("No users remaining in room!");
+          console.log("Users after deletion: " + stringify(currentStreamingUsers));
 
-        // Let the client know to stop playing
-        return res.send(stringify({'action' : 'stop'}));
+          // If there are no more users 
+          if (!currentStreamingUsers.length) {
+
+            console.log("No users remaining in room!");
+
+            // Let the client know to stop playing
+            return res.send(stringify({'action' : 'stop'}));
+          }
+        });
       }
-    }
+      else {
+        console.log("User NOT already in room!");
 
-      console.log("User NOT already in room!");
+        // Add the user to the array
+        console.log("Adding user to array.");
 
-      // Add the user to the array
-      console.log("Adding user to array.");
-
-      currentStreamingUsers.push(user);
-
-      // Push the array back into the db
-      setCurrentStreamers(req.params.localEntranceId, currentStreamingUsers, function(err, result) {
-
-
-        getCurrentStreamers(req.params.localEntranceId, function (error, currentStreamingUsers) {
-
-          console.log("Streamers after insert: " + currentStreamingUsers);
-
+        addUserToStreamingUsers(req.params.localEntranceId, currentStreamingUsers, user, function() {
           // Grab the tracks for these new users
           getTracksForUsers(currentStreamingUsers);
 
 
-          // Once we have the user, retrieve all the user source preferences from the db 
-          // (we may need several access tokens for different services?)
+            // Once we have the user, retrieve all the user source preferences from the db 
+            // (we may need several access tokens for different services?)
 
-          // Retrieve appropriate songs from each of the sources
+            // Retrieve appropriate songs from each of the sources
 
-          // Package up the songs into JSON?
+            // Package up the songs into JSON?
 
-          // getFacebookFavoriteArtists(user, null);
+            // getFacebookFavoriteArtists(user, null);
 
-          // Send them out
-          var tracks = {
-            'tracks' : [
-              { 'artist' : 'Incubus', 'song' : 'Drive' } , 
-              { 'artist' : 'The Postal Service', 'song' : 'Such Great Heights'} ,
-              { 'artist' : 'Death Cab For Cutie', 'song' : 'Summer Skin'},
-              { 'artist' : 'The Last Bison', 'song' : 'Switzerland'} ,
-              { 'artist' : 'Passion Pit', 'song' : 'Silvia'}
-          ]};
+            // Send them out
+            var tracks = {
+              'tracks' : [
+                { 'artist' : 'Incubus', 'song' : 'Drive' } , 
+                { 'artist' : 'The Postal Service', 'song' : 'Such Great Heights'} ,
+                { 'artist' : 'Death Cab For Cutie', 'song' : 'Summer Skin'},
+                { 'artist' : 'The Last Bison', 'song' : 'Switzerland'} ,
+                { 'artist' : 'Passion Pit', 'song' : 'Silvia'}
+              ]};
 
           res.send(tracks);
         });
-      });
+      }
     });
   });
 });
@@ -214,55 +211,77 @@ Db.connect(app.get('dburl'), {}, function (err, _db) {
   });
 });
 
-function setCurrentStreamers(localDeviceId, streamingUsers, callback) {
-  db.collection(streamingUsersDBNamespace, function(err, collection) {
-    console.log("Setting streaming users: " + streamingUsers);    
+function getUserFromStreamers(localEntranceId, userJSON, callback) {
+  getCurrentStreamers(localEntranceId, function(err, currentStreamers) {
+    if (!currentStreamers || err) {
+      callback(err, null);
+    } else {
+      return callback(err, streamingUserForUserJSON(currentStreamers, userJSON));
+    }
+  });
+}
+
+function setCurrentStreamers(localEntranceId, streamingUsers, callback) {
+  var recordToStore = {'localEntranceId' : localEntranceId, 'streamingUsers' : streamingUsers};
+  db.collection(streamingUsersDBNamespace, function(err, collection) {  
     if (err) callback(err);
     else {
-      collection.insert({localDeviceId: localDeviceId}, {
-        'localDeviceId': localDeviceId,
-        'streamingUsers': streamingUsers
-      }, {upsert:true}, callback);
+      collection.update(recordToStore, {upsert:true}, callback);
     }
   }); 
 }
 
-function getCurrentStreamers(localDeviceId, callback) {
+function getCurrentStreamers(localEntranceId, callback) {
   db.collection(streamingUsersDBNamespace, function(err, collection) {
-    collection.findOne({'localDeviceId': localDeviceId}, function(err, item) {
+    collection.findOne({'localEntranceId': localEntranceId}, function(err, item) {
       if (!item) {
         callback(err, []);
         return;
       } 
-      console.log("Result: " + stringify(item));
       callback(err, item.streamingUsers);
     });
   });
 }
 
-// function getStreamers(localDeviceId, callback) {
-//   db.collection(streamingUsersDBNamespace, function (err, collection) {
-//     collection.findOne({
-//       'localDeviceId': localDeviceId,
-//     }, function(err, sessionStatus) {
-//         if (err) callback(err, null);
-//         else if (sessionStatus) callback(null, sessionStatus);
-//         else callback(null, []);
-//     });
-//   });
-// }
-
-// function setStreamers (localDeviceId, streamers, callback) {
-//   db.collection(streamingUsersDBNamespace, function(err, collection) {
-//     collection.update({'localDeviceId': localDeviceId}, {
-//       'streamers': streamers,
-//     }, {safe: true, upsert: true}, callback);
-//   });
-// }
-
-function removeUserFromStreamingSession(user, localDeviceId) {
-
+function addUserToStreamingUsers(localEntranceId, streamingUsers, user, callback) {
+  streamingUsers.push(user);
+  setCurrentStreamers(localEntranceId, streamingUsers, callback);
 }
+
+function removeUserFromStreamingUsers(localEntranceId, streamingUsers, userInQuestion, callback) {
+
+  for (var i = 0; i < streamingUsers.length; i++) {
+    if (streamingUsers[i].id == userInQuestion.id) {
+      streamingUsers.splice(i, 1);
+      break;
+    }
+  }
+
+  db.collection(streamingUsersDBNamespace, function(err, collection) {
+        collection.remove({'_id':new BSON.ObjectID(id)}, {safe:true}, function(err, result) {
+            if (err) {
+                res.send({'error':'An error has occurred - ' + err});
+            } else {
+                console.log('' + result + ' document(s) deleted');
+                res.send(req.body);
+            }
+        });
+    });
+
+  setCurrentStreamers(localEntranceId, streamingUsers, callback);
+}
+
+function indexOfStreamingUser (streamingUsers, userInQuestion) {
+  assert(streamingUsers, "streaming users must not be null");
+  assert(userInQuestion, "user must not be null");
+  for (var i = 0; i < streamingUsers.length; i++) {
+    if (streamingUsers[i].id == userInQuestion.id) {
+      return i;
+    }
+  }
+  return -1;
+}
+
 
 function stringify(object) {
   return JSON.stringify(object, undefined, 2);
