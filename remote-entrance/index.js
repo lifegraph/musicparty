@@ -73,6 +73,10 @@ app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
 
               // Let the client know to stop playing
               return res.send(stringify({'action' : 'stop'}));
+            } else {
+              // User left room, but people are still in room
+              // TODO compute new tracks, send them down
+              return res.send(stringify({'action' : 'continue'}));
             }
           });
         } 
@@ -97,8 +101,9 @@ app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
             // getFacebookFavoriteArtists(user, null);
             getFacebookFavoriteArtists(user, function (artists) {
               getSongsFromArtists(artists, function(songs) {
+                console.log("SONGS:");
                 console.log(songs);
-                res.send(songs);
+                res.json(songs);
               });
             });  
           });
@@ -185,7 +190,7 @@ function getSongsFromArtists(artists, callback) {
 
       // For each artist
       artists.forEach(function(artist) {
-
+        // console.log("searching for artist: " + artist)
         // Create a spotify search
         var search = new sp.Search("artist:" + artist);
         search.trackCount = 1; // we're only interested in the first result for now;
@@ -193,22 +198,26 @@ function getSongsFromArtists(artists, callback) {
         // Execute the search
         search.execute();
 
+        var tracks = [];
+
         // When the search has been completed
         search.once('ready', function() {
-
           // If there aren't any searches
           if(!search.tracks.length) {
-              console.error('there is no track to play :[');
-              return;
-
+              console.error('there is no track to play :[ for artist ' + artist);
           } else {
-
             // Add the track to the rest of the tracks
-            tracks = tracks.concat(search.tracks);
+            console.log(search.tracks);
+            console.log(search.tracks[0]);
+            for (var i = 0; i < search.tracks.length; i++) {
+              tracks.push(search.tracks[i]);
+            }
+            // tracks = tracks.concat(search.tracks);
           }
 
           // Keep track of how far we've come
           loadedTracks++;
+          console.log("loaded: " + loadedTracks + "/" + artists.length + " : " + tracks.length);
 
           // If we've checked all the artists
           if (loadedTracks == artists.length) {
