@@ -47,21 +47,21 @@ serialPort.on("data", function (data) {
       return;
     }
 
-    HTTP_GET('localhost', '/' + fakeUID + '/' + encodeURIComponent(trying_to_connect_uid) + "/tracks", 3000, function(error, jsonResponse) {
+    HTTP_GET('entranceapp', '/' + fakeUID + '/' + encodeURIComponent(trying_to_connect_uid) + "/tracks", 00, function(error, jsonResponse) {
     	if (error) {
     		console.log("Error fetching tracks from Entrance backend: " + error.message);
     		return;
     	}
 
-    	switch(jsonResponse.action) {
-    		case 'continue':
-    			// This needs to 
-    			trackRecord.playTracks(jsonResponse.tracks);
-    		case 'stop':
-    			trackRecord.stopTracks();
+    	// switch(jsonResponse.action) {
+    	// 	case 'continue':
+    	// 		// This needs to 
+    	// 		trackRecord.playTracks(jsonResponse.tracks);
+    	// 	case 'stop':
+    	// 		trackRecord.stopTracks();
 
-    	}
-
+    	// }
+    	trackRecord.playTracks(jsonResponse);
     	
     	console.log("Response from entrance backend: " + jsonResponse);
     	set_last_uid_to_connect(trying_to_connect_uid);
