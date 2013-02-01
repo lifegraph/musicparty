@@ -115,7 +115,7 @@ app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
 });
 
 app.get('/testtrackstream', function(req, res) {
-  var url = "spotify:track:5YuJhe1jfUYb8b3jf2IZM0";
+  var url = "spotify:track:63vL5oxWrlvaJ0ayNaQnbX";
 
   var track = sp.Track.getFromUrl(url); 
   track.on('ready', function() {
@@ -128,7 +128,11 @@ app.get('/testtrackstream', function(req, res) {
     // Start playing it
     player.play();
     player.pipe(res);
-    
+    player.once('track-end', function() {
+      player.stop();
+      res.end();
+    });
+
   });
   
 });
