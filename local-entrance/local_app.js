@@ -53,7 +53,15 @@ serialPort.on("data", function (data) {
     		return;
     	}
 
-    	// trackRecord.playTracks(jsonResponse);
+    	switch(jsonResponse.action) {
+    		case 'continue':
+    			// This needs to 
+    			trackRecord.playTracks(jsonResponse);
+    		case 'stop':
+
+    	}
+
+    	
     	console.log("Response from entrance backend: " + jsonResponse);
     	set_last_uid_to_connect(trying_to_connect_uid);
 

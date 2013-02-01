@@ -52,52 +52,48 @@ app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
       // Send something to the local entrance device to let it know if
       // a.) there was a network error or b.) the device needs to sync
     } 
-
     // Grab those who are already in the room 
     getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
 
-      console.log("Number of streaming users:" + currentStreamingUsers.streamingUsers.length);
-
-      console.log("User we're searching for: " + stringify(user));
       // If this person is already in the room, delete them
-      if (indexOfStreamingUser(user) != -1) {
+      indexOfStreamingUser(req.params.localEntranceId, user, function (err, index) {
 
-        console.log("User already in room!");
+        // If the 
+        if (index != -1) {
+          console.log("User already in room!");
 
-        console.log("Deleting user from room.")
-        // Update the current streaming users
+          console.log("User already in room... deleting user from room.")
+          // Update the current streaming users
 
-        removeUserFromStreamingUsers(req.params.localEntranceId, user, function () {
+          removeUserFromStreamingUsers(req.params.localEntranceId, user, function () {
 
-          console.log("Users after deletion: " + stringify(currentStreamingUsers));
+            // If there are no more users 
+            if (!currentStreamingSession.streamingUsers.length) {
 
-          // If there are no more users 
-          if (!currentStreamingUsers.length) {
+              console.log("No users remaining in room!");
 
-            console.log("No users remaining in room!");
+              // Let the client know to stop playing
+              return res.send(stringify({'action' : 'stop'}));
+            }
+          });
+        } 
+        else {
+          console.log("User NOT already in room!");
 
-            // Let the client know to stop playing
-            return res.send(stringify({'action' : 'stop'}));
-          }
-        });
-      }
-      else {
-        console.log("User NOT already in room!");
+          // Add the user to the array
+          console.log("Adding user to array.");
 
-        // Add the user to the array
-        console.log("Adding user to array.");
-
-        addUserToStreamingUsers(req.params.localEntranceId, currentStreamingUsers, user, function() {
+          addUserToStreamingUsers(req.params.localEntranceId, user, function() {
           // Grab the tracks for these new users
-          getTracksForUsers(currentStreamingUsers);
+            // getTracksForUsers(currentStreamingUsers);
 
 
-            // Once we have the user, retrieve all the user source preferences from the db 
-            // (we may need several access tokens for different services?)
+              // Once we have the user, retrieve all the user source preferences from the db 
+              // (we may need several access tokens for different services?)
 
-            // Retrieve appropriate songs from each of the sources
+              // Retrieve appropriate songs from each of the sources
 
-            // Package up the songs into JSON?
+              // Package up the songs into JSON?
 
             // getFacebookFavoriteArtists(user, null);
             getFacebookFavoriteArtists(user, function (artists) {
@@ -105,21 +101,10 @@ app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
                 console.log(songs);
                 res.send(songs);
               });
-            });
-
-            // Send them out
-          //   var tracks = {
-          //     'tracks' : [
-          //       { 'artist' : 'Incubus', 'song' : 'Drive' } , 
-          //       { 'artist' : 'The Postal Service', 'song' : 'Such Great Heights'} ,
-          //       { 'artist' : 'Death Cab For Cutie', 'song' : 'Summer Skin'},
-          //       { 'artist' : 'The Last Bison', 'song' : 'Switzerland'} ,
-          //       { 'artist' : 'Passion Pit', 'song' : 'Silvia'}
-          //     ]};
-
-          // res.send(tracks);
-        });
-      }
+            });  
+          });
+        }
+      });
     });
   });
 });
@@ -264,22 +249,34 @@ function getUserFromStreamers(localEntranceId, userJSON, callback) {
 }
 
 function setCurrentStreamingSession(localEntranceId, streamingSession, callback) {
-  getCurrentStreamingSession(localEntranceId, function (err, streamingSession) {
+  getCurrentStreamingSession(localEntranceId, function (err, oldStreamingSession) {
     if (err) callback(err);
+    if (!oldStreamingSession) oldStreamingSession = streamingSession;
 
-    streamingSession.streamingUsers = streamingUsers;
-    streamingSession.save(function (err) {
-      if (err) callback(err);
+    oldStreamingSession.streamingUsers = streamingSession.streamingUsers;
+    
+    oldStreamingSession.save(function (err) {
+      callback(err);
     });
   });
 }
 
 function getCurrentStreamingSession(localEntranceId, callback) {
+  assert(localEntranceId);
   StreamingSession.findOne( { localEntranceId : localEntranceId }, function(err, streamingSession) {
     if (err) {
       callback (err, null);
     } 
     else {
+      if (!streamingSession) {
+        streamingSession = new StreamingSession( {localEntranceId : localEntranceId});
+        streamingSession.save(function (err) {
+          if (err) return callback(err);
+          else {
+            return callback(null, streamingSession);
+          }
+        })
+      } 
       callback(null, streamingSession);
     }
   })
@@ -288,10 +285,10 @@ function getCurrentStreamingSession(localEntranceId, callback) {
 function addUserToStreamingUsers(localEntranceId, user, callback) {
   getCurrentStreamingSession(localEntranceId, function (err, streamingSession) {
     streamingSession.streamingUsers.push(user);
-    setCurrentStreamingSession(localEntranceId)
+    setCurrentStreamingSession(localEntranceId, streamingSession, function (err) {
+      callback(err, streamingSession);
+    });
   });
-  streamingUsers.push(user);
-  setCurrentStreamers(localEntranceId, streamingUsers, callback);
 }
 
 function removeUserFromStreamingUsers(localEntranceId, userInQuestion, callback) {
@@ -308,17 +305,18 @@ function removeUserFromStreamingUsers(localEntranceId, userInQuestion, callback)
   });
 }
 
-function indexOfStreamingUser (userInQuestion) {
-  assert(streamingUsers, "streaming users must not be null");
+function indexOfStreamingUser (localEntranceId, userInQuestion, callback) {
   assert(userInQuestion, "user must not be null");
-  getCurrentStreamingSession(function (err, streamingSession) {
-    if (err) return -1;
+  getCurrentStreamingSession(localEntranceId, function (err, streamingSession) {
+
+    if (err) return callback(err, -1);
+
     for (var i = 0; i < streamingSession.streamingUsers.length; i++) {
       if (streamingSession.streamingUsers[i].id == userInQuestion.id) {
-        return i;
+        return callback(null, i);
       }
     }
-    return -1;
+    return callback(null, -1);
   });
 }
 
@@ -339,20 +337,6 @@ function initializeServerAndDatabase() {
   db.once('open', function callback () {
     // yay!
     console.log("Connected to mongo.");
-
-    // var ss = StreamingSession({localEntranceId : '5'});
-    // console.log("SS: " + ss);
-    // ss.save(function(err) {
-    //   StreamingSession.findOne({localEntranceId : '5'}, function(err, item) {
-    //     console.log("ITEM: " + item);
-    //     item.streamingUsers = ['food', 'yum'];
-    //     item.save(function(err) {
-    //       StreamingSession.find({localEntranceId : '5'}, function(err, item) {
-    //         console.log("New item: " + item);
-    //       });
-    //     })
-    //    });
-    // });
 
     // Start server.
     http.createServer(app).listen(app.get('port'), function(){
