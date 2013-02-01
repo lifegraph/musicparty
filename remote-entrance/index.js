@@ -405,6 +405,8 @@ function initializeServerAndDatabase() {
 
   // Start database and get things running
   console.log("connecting to database at " + app.get('dburl'));
+
+  // console.log("EV: " + ENV['TEST']);
   mongoose.connect(app.get('dburl'));
 
   db = mongoose.connection;
