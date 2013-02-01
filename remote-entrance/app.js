@@ -15,8 +15,7 @@ var express = require('express')
   , assert = require('assert');
 
 var app = express();
-var hostUrl = 'http://entranceapp.herokuapp.com'
-var mongo = require('mongodb');
+var hostUrl = 'http://entranceapp.herokuapp.com';
 var gateKeeper = require("./gate-keeperClient.js");
 var db;
 
@@ -174,6 +173,70 @@ function getFacebookFavoriteArtists(facebookUser, callback) {
       });
   });
 }
+/**
+ * Gets the songs associated with each artist in the array artists.
+ */
+
+function getSongsFromArtists(artists, callback) {
+      var loadedTracks = 0;
+      if (!artists.length) {
+        console.log("There are no artists.");
+        return callback([]);
+      }
+
+      // For each artist
+      artists.forEach(function(artist) {
+
+        // Create a spotify search
+        var search = new sp.Search("artist:" + artist);
+        search.trackCount = 1; // we're only interested in the first result for now;
+
+        // Execute the search
+        search.execute();
+
+        // When the search has been completed
+        search.once('ready', function() {
+
+          // If there aren't any searches
+          if(!search.tracks.length) {
+              console.error('there is no track to play :[');
+              return;
+
+          } else {
+
+            // Add the track to the rest of the tracks
+            tracks = tracks.concat(search.tracks);
+          }
+
+          // Keep track of how far we've come
+          loadedTracks++;
+
+          // If we've checked all the artists
+          if (loadedTracks == artists.length) {
+            // Shuffle up the tracks
+            shuffle(tracks);
+
+            // Call our callback
+            callback(tracks);
+          }
+        });
+      });
+}
+
+/*
+ * Shuffles list in-place
+ */
+function shuffle(list) {
+  var i, j, t;
+  for (i = 1; i < list.length; i++) {
+    j = Math.floor(Math.random()*(1+i));  // choose j in [0..i]
+    if (j != i) {
+      t = list[i];                        // swap list[i] and list[j]
+      list[i] = list[j];
+      list[j] = t;
+    }
+  }
+}
 
 function getUserFromStreamers(localEntranceId, userJSON, callback) {
   getCurrentStreamers(localEntranceId, function(err, currentStreamers) {
@@ -266,6 +329,7 @@ function initializeServerAndDatabase() {
 
   // Start database and get things running
   console.log("connecting to database at " + app.get('dburl'));
+  mongoose.connect(app.get('dburl'));
 
   db = mongoose.connection;
 
