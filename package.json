@@ -10,7 +10,8 @@
     "jade": "*",
     "libspotify": "git://github.com/Floby/node-libspotify.git",
     "mongodb": "~1.2.10",
-    "mongoose": "~3.5.5"
+    "mongoose": "~3.5.5",
+    "serialport": "~1.0.8"
   },
   "engines": {
     "node": "0.8.x",
