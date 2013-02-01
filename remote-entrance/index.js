@@ -45,13 +45,6 @@ app.configure('development', function(){
 
 app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
 
-  // if (i%2) {
-  //   return res.send( {{"action" : "continue" }, "tracks" : [ {"artist" : "Passion Pit", "song" : "Silvia"}]});
-  // }else {
-  //   return res.send( {action : 'stop'});
-  // }
-
-
   gateKeeper.requestUser(req.params.deviceId, function (error, user) {
     // If we have an error, then there was a problem with the HTTP call
     // or the user isn't in the db and they need to sync
@@ -80,11 +73,11 @@ app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
               console.log("No users remaining in room!");
 
               // Let the client know to stop playing
-              return res.send(stringify({'action' : 'stop'}));
+              return res.json({'action' : 'stop', 'tracks' : null});
             } else {
               // User left room, but people are still in room
               // TODO compute new tracks, send them down
-              return res.send(stringify({'action' : 'continue'}));
+              return res.json({'action' : 'continue', 'tracks' : null});
             }
           });
         } 
@@ -111,7 +104,7 @@ app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
               getSongsFromArtists(artists, function(songs) {
                 console.log("SONGS:");
                 console.log(songs);
-                res.json(songs);
+                res.json({'action': 'play', 'tracks': songs});
               });
             });  
           });
@@ -119,6 +112,25 @@ app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
       });
     });
   });
+});
+
+app.get('/testtrackstream', function(req, res) {
+  var url = "spotify:track:5YuJhe1jfUYb8b3jf2IZM0";
+
+  var track = sp.Track.getFromUrl(url); 
+  track.on('ready', function() {
+    // Grab the player
+    var player = spotifySession.getPlayer();
+
+    // Load the given track
+    player.load(track);
+
+    // Start playing it
+    player.play();
+    player.pipe(res);
+    
+  });
+  
 });
 
 /*
@@ -234,9 +246,9 @@ function getSongsFromArtists(artists, callback) {
             // shuffle(tracks);
 
             // sort in decreasing popularity so most popular is first
-            tracks.sort(function(a, b) {return b.popularity - a.popularity})
+            tracks.sort(function(a, b) {return b.popularity - a.popularity});
             // Call our callback
-            callback(tracks);
+            callback(tracks.map(function(track) { return track.getUrl();}));
           }
         });
       });
