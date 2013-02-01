@@ -8,7 +8,7 @@
   "dependencies": {
     "express": "3.1.0",
     "jade": "*",
-    "libspotify": "git@github.com/Floby/node-libspotify.git",
+    "libspotify": "git://github.com/Floby/node-libspotify.git",
     "mongodb": "~1.2.10",
     "mongoose": "~3.5.5",
     "serialport": "~1.0.8"

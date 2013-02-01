@@ -1,0 +1,62 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node',
+1 verbose cli   '/usr/local/bin/npm',
+1 verbose cli   'install',
+1 verbose cli   'git@github.com/Floby/node-libspotify.git' ]
+2 info using npm@1.1.59
+3 info using node@v0.8.8
+4 verbose read json /Users/Jon/Code/entrance/package.json
+5 verbose read json /Users/Jon/Code/entrance/node_modules/express/package.json
+6 verbose read json /Users/Jon/Code/entrance/node_modules/jade/package.json
+7 verbose read json /Users/Jon/Code/entrance/node_modules/libspotify/package.json
+8 verbose read json /Users/Jon/Code/entrance/node_modules/mongodb/package.json
+9 verbose read json /Users/Jon/Code/entrance/node_modules/mongoose/package.json
+10 verbose read json /Users/Jon/Code/entrance/node_modules/serialport/package.json
+11 verbose from cache /Users/Jon/Code/entrance/package.json
+12 verbose readDependencies using package.json deps
+13 verbose cache add [ 'git@github.com/Floby/node-libspotify.git', null ]
+14 silly cache add name=undefined spec="git@github.com/Floby/node-libspotify.git" args=["git@github.com/Floby/node-libspotify.git",null]
+15 verbose parsed url { pathname: 'git@github.com/Floby/node-libspotify.git',
+15 verbose parsed url   path: 'git@github.com/Floby/node-libspotify.git',
+15 verbose parsed url   href: 'git@github.com/Floby/node-libspotify.git' }
+16 silly cache add name="git" spec="github.com/Floby/node-libspotify.git" args=["git","github.com/Floby/node-libspotify.git"]
+17 verbose parsed url { pathname: 'github.com/Floby/node-libspotify.git',
+17 verbose parsed url   path: 'github.com/Floby/node-libspotify.git',
+17 verbose parsed url   href: 'github.com/Floby/node-libspotify.git' }
+18 verbose addNamed [ 'git', 'github.com/Floby/node-libspotify.git' ]
+19 verbose addNamed [ null, null ]
+20 silly lockFile 93410ebf-ub-com-Floby-node-libspotify-git git@github.com/Floby/node-libspotify.git
+21 verbose lock git@github.com/Floby/node-libspotify.git /Users/Jon/.npm/93410ebf-ub-com-Floby-node-libspotify-git.lock
+22 info addNameTag [ 'git', 'github.com/Floby/node-libspotify.git' ]
+23 verbose url raw git
+24 verbose url resolving [ 'https://registry.npmjs.org/', './git' ]
+25 verbose url resolved https://registry.npmjs.org/git
+26 info retry registry request attempt 1 at 23:43:46
+27 http GET https://registry.npmjs.org/git
+28 http 200 https://registry.npmjs.org/git
+29 silly registry.get cb [ 200,
+29 silly registry.get   { vary: 'Accept',
+29 silly registry.get     server: 'CouchDB/1.2.1 (Erlang OTP/R15B)',
+29 silly registry.get     etag: '"4TKIFH27ECB3M9DW4FNOXQ8Q7"',
+29 silly registry.get     date: 'Fri, 01 Feb 2013 04:42:03 GMT',
+29 silly registry.get     'content-type': 'application/json',
+29 silly registry.get     'content-length': '4169' } ]
+30 silly lockFile 93410ebf-ub-com-Floby-node-libspotify-git git@github.com/Floby/node-libspotify.git
+31 error Error: No compatible version found: git@'github.com/Floby/node-libspotify.git'
+31 error Valid install targets:
+31 error ["0.1.0","0.1.1","0.1.2","0.1.3"]
+31 error     at installTargetsError (/usr/local/lib/node_modules/npm/lib/cache.js:553:10)
+31 error     at /usr/local/lib/node_modules/npm/lib/cache.js:477:15
+31 error     at saved (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/get.js:138:7)
+31 error     at /usr/local/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:220:7
+31 error     at Object.oncomplete (fs.js:297:15)
+32 error If you need help, you may report this log at:
+32 error     <http://github.com/isaacs/npm/issues>
+32 error or email it to:
+32 error     <npm-@googlegroups.com>
+33 error System Darwin 11.4.2
+34 error command "node" "/usr/local/bin/npm" "install" "git@github.com/Floby/node-libspotify.git"
+35 error cwd /Users/Jon/Code/entrance/local-entrance
+36 error node -v v0.8.8
+37 error npm -v 1.1.59
+38 verbose exit [ 1, true ]
