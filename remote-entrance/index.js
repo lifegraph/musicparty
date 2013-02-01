@@ -11,7 +11,7 @@ var express = require('express')
   , path = require('path')
   , StreamingSession = require('./models/StreamingSession')
   , mongoose = require('mongoose')
-  , sp = require('libspotify')
+  // , sp = require('libspotify')
   , assert = require('assert');
 
 var app = express();
@@ -19,6 +19,7 @@ var hostUrl = 'http://entranceapp.herokuapp.com';
 var gateKeeper = require("./gate-keeperClient.js");
 var db;
 var spotifySession;
+var i = 0;
 
 app.configure(function(){
   app.set('port', process.env.PORT || 3000);
@@ -43,6 +44,13 @@ app.configure('development', function(){
 
 
 app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
+
+  if (i%2) {
+    return res.send( {{"action" : "continue" }, "tracks" : [ {"artist" : "Passion Pit", "song" : "Silvia"}]});
+  }else {
+    return res.send( {action : 'stop'});
+  }
+
 
   gateKeeper.requestUser(req.params.deviceId, function (error, user) {
     // If we have an error, then there was a problem with the HTTP call
@@ -337,14 +345,16 @@ function initializeServerAndDatabase() {
     // yay!
     console.log("Connected to mongo.");
 
-
-    connectSpotify(function(spotifySession) {
-      console.log("Connected to Spotify.");
-      // Start server.
-      http.createServer(app).listen(app.get('port'), function(){
+http.createServer(app).listen(app.get('port'), function(){
         console.log("Express server listening on port " + app.get('port'));
       });
-    });
+    // connectSpotify(function(spotifySession) {
+    //   console.log("Connected to Spotify.");
+    //   // Start server.
+    //   // http.createServer(app).listen(app.get('port'), function(){
+    //   //   console.log("Express server listening on port " + app.get('port'));
+    //   // });
+    // });
   });
 }
 /*
