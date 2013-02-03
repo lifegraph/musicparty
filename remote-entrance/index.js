@@ -141,12 +141,14 @@ function handleTap(localEntranceId, deviceId, hollaback) {
 }
 
 app.get('/:localEntranceId/stream', function (req, res) {
+  console.log("request for /stream");
   getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
     // (Hopefully this session has tracks)
-    if (currentStreamingSession.tracks) {
+    console.log("found streaming session:" + currentStreamingSession);
+    if (currentStreamSession && currentStreamingSession.tracks) {
 
       // Grab a random track URL
-      // console.log("Beginning to send tracks with streaming session: " + stringify(currentStreamingSession));
+      console.log("Beginning to send tracks with streaming session: " + stringify(currentStreamingSession));
      return streamTracks(req, res, currentStreamingSession);
       
     } else {
@@ -185,6 +187,7 @@ function fakeStreamTracks (request, response, streamingSession) {
 }
 // var gooone = false;
 function streamTracks(request, response, streamingSession) {
+  console.log("stream tracks");
   
   if (streamingSession.tracks.length != 0) {
 
@@ -194,9 +197,9 @@ function streamTracks(request, response, streamingSession) {
     console.log("Song starting : " + streamingSession.tracks.length + " songs left to play.");
 
     removeTrackFromStreamingSession(request.params.localEntranceId, url, function (err, revisedStreamingSession) {
-
+      console.log("removed url, now revisedStreamingSession:" + revisedStreamingSession);
       // Fetch a track from the URL
-      var track = sp.Track.getFromUrl(url); 
+      var track = sp.Track.getFromUrl(url);
 
       // When the track is ready
       track.on('ready', function() {
@@ -222,7 +225,7 @@ function streamTracks(request, response, streamingSession) {
 
           // Log that it's over
           console.log("Song ended. " + revisedStreamingSession.tracks.length + "songs left to play.");
-          res.end();
+          response.end();
           // streamTracks(request, response, revisedStreamingSession);
         });
         // if (!gooone) {

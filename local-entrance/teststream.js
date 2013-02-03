@@ -15,6 +15,11 @@ function listen() {
     res.on('end', function() {
       return listen();
     });
+    res.on('error', function(err) {
+      console.log("ERROR");
+      console.log(err);
+      return listen();
+    })
     res.pipe(play.stdin);
   });
 }
