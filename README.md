@@ -31,3 +31,9 @@ V4 - Attach a speaker to the device
 
 V5 - Stream over bluetooth (first via Jambox)
 
+Libspotify may be a bitch on Heroku. The Library path has to be set correctly:
+
+'heroku config:set LD_LIBRARY_PATH=/app/.heroku/vender/lib:/app/.heroku/libspotify/lib'
+
+'heroku config:add PKG_CONFIG_PATH=/app/.heroku/vendor/lib/pkgconfig'
+
