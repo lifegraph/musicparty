@@ -415,40 +415,37 @@ function initializeServerAndDatabase() {
   db.once('open', function callback () {
     // yay!
     console.log("Connected to mongo.");
-    // connectSpotify(function(spotifySession) {
-    //   console.log("Connected to Spotify.");
-    //   // Start server.
-      // http.createServer(app).listen(app.get('port'), function(){
-      //   console.log("Express server listening on port " + app.get('port'));
-      // });
-    // });
+    connectSpotify(function(spotifySession) {
+      console.log("Connected to Spotify.");
+      // Start server.
       http.createServer(app).listen(app.get('port'), function(){
         console.log("Express server listening on port " + app.get('port'));
       });
+    });
   });
 }
 /*
  * Beings a spotify session
  */
-// function connectSpotify (callback) {
-//   // Create a spotify session wth our api key
-//   console.log(process.env.SPOTIFY_KEYPATH);
-//   spotifySession = new sp.Session({
-//     applicationKey: process.env.SPOTIFY_KEYPATH
-//   });
+function connectSpotify (callback) {
+  // Create a spotify session wth our api key
+  console.log(process.env.SPOTIFY_KEYPATH);
+  spotifySession = new sp.Session({
+    applicationKey: process.env.SPOTIFY_KEYPATH
+  });
 
-//   console.log("Connecting to Spotify...")
-//   // Log in with our credentials
-//   spotifySession.login(process.env.SPOTIFY_USERNAME, process.env.SPOTIFY_PASSWORD);
+  console.log("Connecting to Spotify...")
+  // Log in with our credentials
+  spotifySession.login(process.env.SPOTIFY_USERNAME, process.env.SPOTIFY_PASSWORD);
 
-//   var player = spotifySession.getPlayer();  
+  var player = spotifySession.getPlayer();  
 
-//   // Once we're logged in, continue with the callback
-//   spotifySession.once('login', function (err) {
-//     if (err) return console.error('Error:', err);
-//     callback(spotifySession);
-//   });
-// }
+  // Once we're logged in, continue with the callback
+  spotifySession.once('login', function (err) {
+    if (err) return console.error('Error:', err);
+    callback(spotifySession);
+  });
+}
 
 
 
