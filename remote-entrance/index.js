@@ -227,6 +227,7 @@ function streamTracks(request, response, streamingSession) {
         });
         if (!gooone) {
           gooone = true;
+          console.log("player keys");
           console.log(Object.keys(player));
           setTimeout(function() {
             console.log("NEEEEXXXTTT");
