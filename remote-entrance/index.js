@@ -207,8 +207,10 @@ function streamTracks(request, response, streamingSession) {
         // Load the given track
         player.load(track);
 
-        // Start playing it
-        player.play();
+        if (!gooone) {
+          // Start playing it
+          player.play();
+        }
 
         // Pipe the result
         player.pipe(response);
@@ -225,8 +227,12 @@ function streamTracks(request, response, streamingSession) {
         });
         if (!gooone) {
           gooone = true;
-          console.log(JSON.stringify(player, undefined, 2));
-          streamTracks(request, response, revisedStreamingSession);
+          console.log(Object.keys(player));
+          setTimeout(function() {
+            console.log("NEEEEXXXTTT");
+            streamTracks(request, response, revisedStreamingSession);
+          }, 3000);
+          
         }
       });
     });
