@@ -95,7 +95,7 @@ function handleTap(localEntranceId, deviceId, hollaback) {
               // Let the client know to stop playing
 
               setTracksToStreamingSession(localEntranceId, [], function(err, streamingSession) {
-                var players = spotifySession.getPlayer().stop();
+                spotifySession.getPlayer().stop();
               });
 
               return hollaback({'action' : 'stop', 'message' : 'Empty session. Stopping Streaming.'});
@@ -141,12 +141,14 @@ function handleTap(localEntranceId, deviceId, hollaback) {
 }
 
 app.get('/:localEntranceId/stream', function (req, res) {
+  console.log("request for /stream");
   getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
     // (Hopefully this session has tracks)
-    if (currentStreamingSession.tracks) {
+    console.log("found streaming session:" + currentStreamingSession);
+    if (currentStreamingSession && currentStreamingSession.tracks) {
 
       // Grab a random track URL
-      // console.log("Beginning to send tracks with streaming session: " + stringify(currentStreamingSession));
+      console.log("Beginning to send tracks with streaming session: " + stringify(currentStreamingSession));
      return streamTracks(req, res, currentStreamingSession);
       
     } else {
@@ -190,8 +192,9 @@ function fakeStreamTracks (request, response, streamingSession) {
     return streamTracks(request, response, streamingSession);
   }
 }
-
+// var gooone = false;
 function streamTracks(request, response, streamingSession) {
+  console.log("stream tracks");
   
   if (streamingSession.tracks.length != 0) {
 
@@ -201,9 +204,9 @@ function streamTracks(request, response, streamingSession) {
     console.log("Song starting : " + streamingSession.tracks.length + " songs left to play.");
 
     removeTrackFromStreamingSession(request.params.localEntranceId, url, function (err, revisedStreamingSession) {
-
+      console.log("removed url, now revisedStreamingSession:" + revisedStreamingSession);
       // Fetch a track from the URL
-      var track = sp.Track.getFromUrl(url); 
+      var track = sp.Track.getFromUrl(url);
 
       // When the track is ready
       track.on('ready', function() {
@@ -217,8 +220,10 @@ function streamTracks(request, response, streamingSession) {
         // Start playing it
         player.play();
 
-        // Pipe the result
-        player.pipe(response);
+        // if (!gooone) {
+          // Pipe the result
+          player.pipe(response);
+        // }
 
         // When the player finishes
         player.once('track-end', function() {
@@ -227,9 +232,19 @@ function streamTracks(request, response, streamingSession) {
 
           // Log that it's over
           console.log("Song ended. " + revisedStreamingSession.tracks.length + "songs left to play.");
-
-          streamTracks(request, response, revisedStreamingSession);
+          response.end();
+          // streamTracks(request, response, revisedStreamingSession);
         });
+        // if (!gooone) {
+        //   gooone = true;
+        //   console.log("player keys");
+        //   console.log(Object.keys(player));
+        //   setTimeout(function() {
+        //     console.log("NEEEEXXXTTT");
+        //     streamTracks(request, response, revisedStreamingSession);
+        //   }, 3000);
+          
+        // }
       });
     });
   }  
@@ -443,9 +458,9 @@ function setTracksToStreamingSession(localEntranceId, tracks, callback) {
 
 function removeTrackFromStreamingSession(localEntranceId, track, callback) {
   getCurrentStreamingSession(localEntranceId, function (err, streamingSession) {
-    streamingSession.tracks.splice(streamingSession.tracks.indexOf(track), 1, null);
+    streamingSession.tracks.splice(streamingSession.tracks.indexOf(track), 1);
     setCurrentStreamingSession(localEntranceId, streamingSession, function (err, revisedStreamingSession) {
-      if (err) console.log("Error saving tracks!");
+      if (err) console.log("Error saving tracks! " + err);
       return callback(err, revisedStreamingSession);
     });
   });
@@ -547,9 +562,7 @@ function connectSpotify (appKey, callback) {
   console.log(appKey);
   console.log("Connecting to Spotify...")
   // Log in with our credentials
-  spotifySession.login(process.env.SPOTIFY_USERNAME, process.env.SPOTIFY_PASSWORD);
-
-  var player = spotifySession.getPlayer();  
+  spotifySession.login(process.env.SPOTIFY_USERNAME, process.env.SPOTIFY_PASSWORD); 
 
   // Once we're logged in, continue with the callback
   spotifySession.once('login', function (err) {
