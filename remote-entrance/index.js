@@ -169,7 +169,7 @@ function fakeStreamTracks (request, response, streamingSession) {
 
   console.log("received CSS: " + streamingSession);
 
-  if (fakeListener) clearTimeout(fakeListener);
+  // if (fakeListener) clearTimeout(fakeListener);
 
   if (streamingSession.tracks.length == 0) {
       var player = spotifySession.getPlayer();
