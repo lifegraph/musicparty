@@ -24,7 +24,7 @@ var i = 0;
 
 app.configure(function(){
   app.set('port', process.env.PORT || 3000);
-  app.set('dburl', process.env.MONGOLAB_URI || 'mongodb://localhost:27017/entranceDB');
+  app.set('dburl', process.env.MONGOLAB_URI || 'mongodb://localhost:27017/entranceDBtemp');
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
   app.use(express.favicon());
@@ -96,11 +96,15 @@ app.get('/:localEntranceId/:deviceId/tap', function (req, res) {
 
                 setTracksToStreamingSession(req.params.localEntranceId, tracks, function (err, streamingSession) {
 
-                  if (err) {
-                    console.log(err.message);
-                    return res.json({'error': err.message});
-                  }
-                    return res.json({'action': 'play', 'message': 'User added to session. Reforming track list on server.'});
+                  getCurrentStreamingSession(req.params.localEntranceId, function (err, streamingSession) {
+                    console.log("Tracks after saving them? " + streamingSession.tracks);
+                  });
+
+                  // if (err) {
+                  //   console.log(err.message);
+                  //   return res.json({'error': err.message});
+                  // }
+                  //   return res.json({'action': 'play', 'message': 'User added to session. Reforming track list on server.'});
                 });
               });
             });  
@@ -113,25 +117,28 @@ app.get('/:localEntranceId/:deviceId/tap', function (req, res) {
 
 app.get('/:localEntranceId/stream', function (req, res) {
   getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
-    assert(currentStreamingSession.tracks);
-    var url = currentStreamingSession.tracks[0];
+    if (currentStreamingSession.tracks) {}
+      var url = currentStreamingSession.tracks[0];
 
-    var track = sp.Track.getFromUrl(url); 
-    track.on('ready', function() {
-      // Grab the player
-      var player = spotifySession.getPlayer();
+      var track = sp.Track.getFromUrl(url); 
+      track.on('ready', function() {
+        // Grab the player
+        var player = spotifySession.getPlayer();
 
-      // Load the given track
-      player.load(track);
+        // Load the given track
+        player.load(track);
 
-      // Start playing it
-      player.play();
-      player.pipe(res);
-      player.once('track-end', function() {
-        player.stop();
-        res.end();
+        // Start playing it
+        player.play();
+        player.pipe(res);
+        player.once('track-end', function() {
+          player.stop();
+          res.end();
+        });
       });
-    });
+    } else {
+      res.send("Shit");
+    }
   });
 });
 
@@ -302,7 +309,7 @@ function getTracksFromArtists(artists, callback) {
 
           // Keep track of how far we've come
           loadedTracks++;
-          console.log("loaded: " + loadedTracks + "/" + artists.length + " : " + tracks.length);
+          // console.log("loaded: " + loadedTracks + "/" + artists.length + " : " + tracks.length);
 
           // If we've checked all the artists
           if (loadedTracks == artists.length) {
@@ -344,15 +351,8 @@ function getUserFromStreamers(localEntranceId, userJSON, callback) {
 }
 
 function setCurrentStreamingSession(localEntranceId, streamingSession, callback) {
-  getCurrentStreamingSession(localEntranceId, function (err, oldStreamingSession) {
-    if (err) callback(err);
-    if (!oldStreamingSession) oldStreamingSession = streamingSession;
-
-    oldStreamingSession.streamingUsers = streamingSession.streamingUsers;
-    
-    oldStreamingSession.save(function (err) {
-      callback(err);
-    });
+  streamingSession.save(function (err) {
+    callback(err);
   });
 }
 
@@ -387,9 +387,14 @@ function addUserToStreamingUsers(localEntranceId, user, callback) {
 }
 
 function setTracksToStreamingSession(localEntranceId, tracks, callback) {
+  console.log("Saving tracks to streaming session: " + tracks);
   getCurrentStreamingSession(localEntranceId, function (err, streamingSession) {
     streamingSession.tracks = tracks;
+    console.log("Saving tracks to streaming session (in callback) : " + tracks);
+    console.log("Saving tracks to streaming session (in object) : " + streamingSession.tracks);
+    console.log(stringify(streamingSession));
     setCurrentStreamingSession(localEntranceId, streamingSession, function (err) {
+      if (err) console.log("Error saving tracks!");
       callback(err, streamingSession);
     });
   });

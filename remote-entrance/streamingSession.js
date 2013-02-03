@@ -5,7 +5,8 @@ mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost:27017/entrance
 
 var streamingSessionSchema = mongoose.Schema({
 localEntranceId: String,
-streamingUsers: Array
+streamingUsers: Array,
+tracks:Array
 }, {"collection": "streaming_users_db"});
 
 console.log("creating streaming Session");

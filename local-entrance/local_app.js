@@ -1,5 +1,6 @@
 var serialport = require("serialport");
 var trackRecord = require("./trackrecord/trackrecord");
+var spawn = require('child_process').spawn;
 var SerialPort = serialport.SerialPort;
 var http = require('http');
 // var arduino_port = "/dev/tty.usbmodem1411";
@@ -53,6 +54,27 @@ serialPort.on("data", function (data) {
 
       if (jsonResponse.action == 'play' || jsonResponse.action == 'continue') {
         console.log("WOOOOOOOOT PLAY IT BITCH");
+
+        var play = spawn('play', ['-r', 44100, '-b', 16, '-L', '-c', 2, '-e', 'signed-integer', '-t', 'raw', '-']);
+
+        var options = {
+        port:5000,
+        host: 'localhost',
+        path: '/' + fakeUID + '/' + 'stream'
+        };
+
+
+        http.get(options, function(res) {
+
+        res.on('error', function(e) {
+          console.log('HTTP Error!');
+          return;
+        });
+
+        res.pipe(play.stdin);
+      });
+
+
       } 
       else if (jsonResponse.action == 'stop') {
         console.log("Stop playing music you bastard!");
@@ -112,22 +134,22 @@ function HTTP_GET(hostname, path, port, callback) {
 
 
 	http.get(options, function(res) {
-	var output = '';
-	var jsonResult;
-	res.on('error', function(e) {
-	  console.log('HTTP Error!');
-	  callback(e, null);
-	});
+  	var output = '';
+  	var jsonResult;
+  	res.on('error', function(e) {
+  	  console.log('HTTP Error!');
+  	  callback(e, null);
+  	});
 
-	res.on('data', function(chunk) {
-	  output+= chunk;
-	});
+  	res.on('data', function(chunk) {
+  	  output+= chunk;
+  	});
 
-	res.on('end', function() {
-	  console.log("Server Response: " + output);
-	  console.log("Status Code: " + res.statusCode);
-	  callback (null, JSON.parse(output));
-	});
+  	res.on('end', function() {
+  	  console.log("Server Response: " + output);
+  	  console.log("Status Code: " + res.statusCode);
+  	  callback (null, JSON.parse(output));
+  	});
 	}); // end of http.get
 }
 
