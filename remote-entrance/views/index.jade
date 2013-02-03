@@ -1,24 +1,44 @@
-extends layout
 
-html
-  head
-	title #{namespace}
-	script(src='//code.jquery.com/jquery-1.9.0.min.js')
-	link(rel='stylesheet', href=/css/bootstrap.css")
-	link(rel='stylesheet', href='//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css')
-	link(rel='stylesheet', href='//netdna.bootstrapcdn.com/bootswatch/2.1.1/readable/bootstrap.min.css')
-	script(src='//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js')
+head
+    title Entrance
+    script(src='//code.jquery.com/jquery-1.9.0.min.js')
+    link(rel='stylesheet', href="/css/preferences.css")
+    link(rel='stylesheet', href="/css/bootstrap.css")
+    link(rel='stylesheet', href='//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css')
+    link(rel='stylesheet', href='//netdna.bootstrapcdn.com/bootswatch/2.1.1/readable/bootstrap.min.css')
+    script(src='//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js')
+
   body
-	div.navbar.navbar-inverse.navbar-fixed-top
-	  div.navbar-inner
-		div.container-fluid
-		  a.brand(href="#") Entrance
-	div.container
-	  div.page-header
-		h1 Preferences
-		table
-			th Music Sources
-			tr
-				td Facebook - Favorite Artists
-				td
-					a.btn Revoke Access
+    div.navbar.navbar-inverse.navbar-fixed-top
+      div.navbar-inner
+        div.container-fluid
+          a.brand(href="#") Entrance
+    div.container
+      div.page-header
+        h1 Preferences
+        table
+            th Music Sources
+            tr
+                td Facebook - Favorite Artists
+                td
+                    a.btn Revoke Access
+            tr.not-available-row
+                td.not-available-cell Facebook - Latest Listens
+                td
+                    a.btn.warning.disabled Grant Access
+                td Feature Coming Soon!
+            tr.not-available-row
+                td.not-available-cell Spotify - Starred Artists
+                td
+                    a.btn.warning.disabled Grant Access
+                td Feature Coming Soon!
+            tr.not-available-row
+                td.not-available-cell Rdio - User Collections
+                td
+                    a.btn.warning.disabled Grant Access
+                td Feature Coming Soon!
+            tr.not-available-row
+                td.not-available-cell Last.fm. - Loved Artists
+                td
+                    a.btn.warning.disabled Grant Access
+                td Feature Coming Soon!
