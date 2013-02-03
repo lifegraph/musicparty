@@ -76,8 +76,6 @@ function handleTap(localEntranceId, deviceId, hollaback) {
     // Grab those who are already in the room 
     getCurrentStreamingSession(localEntranceId, function (error, currentStreamingSession) {
 
-    console.trace("Here I am!");
-
 
       indexOfStreamingUser(localEntranceId, user, function (err, index) {
         // If the user is in the room, delete them
@@ -178,7 +176,7 @@ function fakeStreamTracks (request, response, streamingSession) {
 
       fakeListener = setTimeout(function() { 
         getCurrentStreamingSession(request.params.localEntranceId, function (error, newCurrentStreamingSession) {
-          fakeStreamTracks(request, response, streamingSession); }) }, 2000);
+          fakeStreamTracks(request, response, newCurrentStreamingSession); }) }, 2000);
   } else {
     return streamTracks(request, response, streamingSession);
   }
@@ -492,12 +490,12 @@ function initializeServerAndDatabase() {
   db.once('open', function callback () {
 
     console.log("Connected to mongo.");
-
     // Create our s3 klient
     var s3Client = knox.createClient({
       key: process.env.S3_KEY
     , secret: process.env.S3_SECRET
     , bucket: process.env.S3_BUCKET
+    , endpoint: 
     });
 
     // Make the call to grab out key
@@ -538,6 +536,7 @@ function connectSpotify (appKey, callback) {
     applicationKey: appKey
   });
 
+  console.log(appKey);
   console.log("Connecting to Spotify...")
   // Log in with our credentials
   spotifySession.login(process.env.SPOTIFY_USERNAME, process.env.SPOTIFY_PASSWORD);
