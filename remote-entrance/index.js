@@ -145,7 +145,7 @@ app.get('/:localEntranceId/stream', function (req, res) {
   getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
     // (Hopefully this session has tracks)
     console.log("found streaming session:" + currentStreamingSession);
-    if (currentStreamSession && currentStreamingSession.tracks) {
+    if (currentStreamingSession && currentStreamingSession.tracks) {
 
       // Grab a random track URL
       console.log("Beginning to send tracks with streaming session: " + stringify(currentStreamingSession));
