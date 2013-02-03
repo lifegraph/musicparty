@@ -46,7 +46,7 @@ serialPort.on("data", function (data) {
       return;
     }
 
-    HTTP_GET('entranceapp', '/' + fakeUID + '/' + encodeURIComponent(trying_to_connect_uid) + "/tracks", 00, function(error, jsonResponse) {
+    HTTP_GET('entranceapp', '/' + fakeUID + '/' + encodeURIComponent(trying_to_connect_uid) + "/tap", 00, function(error, jsonResponse) {
     	if (error) {
     		console.log("Error fetching tracks from Entrance backend: " + error.message);
     		return;
