@@ -172,9 +172,9 @@ function fakeStreamTracks (request, response, streamingSession) {
 
       player.pipe(response);
 
-      fakeListener = setTimeout(function() { fakeStreamTracks(request, response, streamingSession); }, 2000);
-
-
+      fakeListener = setTimeout(function() { 
+        getCurrentStreamingSession(request.params.localEntranceId, function (error, newCurrentStreamingSession) {
+          fakeStreamTracks(request, response, streamingSession); }) }, 2000);
   } else {
     return streamTracks(request, response, streamingSession);
   }
