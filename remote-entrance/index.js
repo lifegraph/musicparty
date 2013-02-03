@@ -141,6 +141,7 @@ app.get('/:localEntranceId/stream', function (req, res) {
       res.send("Shit");
     }
   });
+  console.log("okay.");
 });
 
 app.get('/testtrackstream', function(req, res) {
