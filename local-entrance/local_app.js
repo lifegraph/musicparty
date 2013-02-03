@@ -20,7 +20,6 @@ var fakeUID = "0x010x010x010x02"
 
 serialPort.on("open", function (){
 	console.log("Successfully opened arduino port.")
-	trackRecord.connectSpotify(function(spotifySession) { console.log("Succesfully connected to spotify.");});
 });
 
 // After initialized, when we get a tag from the RF Reader
