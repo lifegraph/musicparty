@@ -157,10 +157,13 @@ app.get('/:localEntranceId/stream', function (req, res) {
 app.get('/:localEntranceId/fakeStream', function (req, res) {
   getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
 
-      // Grab a random track URL
-      // console.log("Beginning to send tracks with streaming session: " + stringify(currentStreamingSession));
-     return fakeStreamTracks(req, res, currentStreamingSession);
+    currentStreamingSession.tracks = [];
+
+    setTracksToStreamingSession(req.params.localEntranceId, [], function (err, newStreamingSession) {
+      return fakeStreamTracks(req, res, newStreamingSession);
       
+    });
+     
   });
 });
 
