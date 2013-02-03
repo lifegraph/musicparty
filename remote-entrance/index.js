@@ -43,10 +43,26 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
+// Electric imp endpoint for Entrance taps.
+app.post('/eimp/tap', function(req, res) {
+  // Parse content.
+  var readerId = req.body.target;
+  var deviceId = req.body.value; // assume whole body is the deviceId
+  deviceId = deviceId.replace(/\u0010/g, ''); // don't know why this is here
+  console.log("eimp with location: %s and device: %s", readerId, deviceId);
+  handleTap(readerId, deviceId, function(json) {
+    res.json(json);
+  });
+});
 
 app.get('/:localEntranceId/:deviceId/tap', function (req, res) {
+  handleTap(req.params.localEntranceId, req.params.deviceId, function(json) {
+    res.json(json);
+  });
+});
 
-  gateKeeper.requestUser(req.params.deviceId, function (error, user) {
+function handleTap(localEntranceId, deviceId, hollaback) {
+  gateKeeper.requestUser(deviceId, function (error, user) {
     // If we have an error, then there was a problem with the HTTP call
     // or the user isn't in the db and they need to sync
     if (error) {
@@ -57,22 +73,18 @@ app.get('/:localEntranceId/:deviceId/tap', function (req, res) {
     } 
 
     // Grab those who are already in the room 
-    getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
+    getCurrentStreamingSession(localEntranceId, function (error, currentStreamingSession) {
 
     console.trace("Here I am!");
 
 
-      // If this person is already in the room, delete them
-      indexOfStreamingUser(req.params.localEntranceId, user, function (err, index) {
-        console.log("Number of users in room:  " + currentStreamingSession.streamingUsers.length);
-        // If the 
+      indexOfStreamingUser(localEntranceId, user, function (err, index) {
+        // If the user is in the room, delete them
         if (index != -1) {
           console.log("User already in room... deleting user from room.")
           // Update the current streaming users
 
-          removeUserFromStreamingUsers(req.params.localEntranceId, user, function (err, newStreamingSession) {
-
-            console.log("Remaining number of users after delete: " + newStreamingSession.streamingUsers.length);
+          removeUserFromStreamingUsers(localEntranceId, user, function (err, newStreamingSession) {
 
             // If there are no more users 
             if (!newStreamingSession.streamingUsers.length) {
@@ -80,12 +92,13 @@ app.get('/:localEntranceId/:deviceId/tap', function (req, res) {
               console.log("No users remaining in room!");
 
               // Let the client know to stop playing
-              return res.json({'action' : 'stop', 'message' : 'Empty session. Stopping Streaming.'});
+
+              return hollaback({'action' : 'stop', 'message' : 'Empty session. Stopping Streaming.'});
 
             } else {
               // User left room, but people are still in room
               // TODO compute new tracks, send them down
-              return res.json({'action' : 'continue', 'message' : 'User removed from session. Reforming track list on server.'});
+              return hollaback({'action' : 'continue', 'message' : 'User removed from session. Reforming track list on server.'});
             }
           });
         } 
@@ -95,7 +108,7 @@ app.get('/:localEntranceId/:deviceId/tap', function (req, res) {
           // Add the user to the array
           console.log("Adding user to array.");
 
-          addUserToStreamingUsers(req.params.localEntranceId, user, function() {
+          addUserToStreamingUsers(localEntranceId, user, function() {
 
             getFacebookFavoriteArtists(user, function (artists) {
 
@@ -106,7 +119,7 @@ app.get('/:localEntranceId/:deviceId/tap', function (req, res) {
                 bloop.push(tracks[18]);
                 bloop.push(tracks[19]);
                 /**********************/
-                setTracksToStreamingSession(req.params.localEntranceId, bloop, function (err, streamingSession) {
+                setTracksToStreamingSession(localEntranceId, bloop, function (err, streamingSession) {
 
                   console.log("Added some tracks which are: " + streamingSession.tracks);
 
@@ -114,11 +127,9 @@ app.get('/:localEntranceId/:deviceId/tap', function (req, res) {
 
                     console.log(err.message);
 
-                    return res.json({'error': err.message});
+                    return hollaback({'error': err.message});
                   }
-
-                    return res.json({'action': 'play', 'message': 'User added to session. Reforming track list on server.'});
-
+                    return hollaback({'action': 'play', 'message': 'User added to session. Reforming track list on server.'});
                 });
               });
             });  
@@ -127,7 +138,7 @@ app.get('/:localEntranceId/:deviceId/tap', function (req, res) {
       });
     });
   });
-});
+}
 
 app.get('/:localEntranceId/stream', function (req, res) {
   getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
