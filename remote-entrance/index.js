@@ -95,7 +95,7 @@ function handleTap(localEntranceId, deviceId, hollaback) {
               // Let the client know to stop playing
 
               setTracksToStreamingSession(localEntranceId, [], function(err, streamingSession) {
-                var players = spotifySession.getPlayer().stop();
+                spotifySession.getPlayer().stop();
               });
 
               return hollaback({'action' : 'stop', 'message' : 'Empty session. Stopping Streaming.'});
@@ -540,9 +540,7 @@ function connectSpotify (appKey, callback) {
 
   console.log("Connecting to Spotify...")
   // Log in with our credentials
-  spotifySession.login(process.env.SPOTIFY_USERNAME, process.env.SPOTIFY_PASSWORD);
-
-  var player = spotifySession.getPlayer();  
+  spotifySession.login(process.env.SPOTIFY_USERNAME, process.env.SPOTIFY_PASSWORD); 
 
   // Once we're logged in, continue with the callback
   spotifySession.once('login', function (err) {
