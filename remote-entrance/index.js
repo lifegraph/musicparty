@@ -128,6 +128,7 @@ app.get('/:localEntranceId/stream', function (req, res) {
       player.play();
       player.pipe(res);
       player.once('track-end', function() {
+        console.log("Song over.")
         player.stop();
         res.end();
         res.redirect('/' + req.params.localEntranceId + '/stream');
