@@ -71,26 +71,30 @@ function handleTap(localEntranceId, deviceId, hollaback) {
       // Send something to the local entrance device to let it know if
       // a.) there was a network error or b.) the device needs to sync
     } 
+
     // Grab those who are already in the room 
     getCurrentStreamingSession(localEntranceId, function (error, currentStreamingSession) {
 
-      // If this person is already in the room, delete them
-      indexOfStreamingUser(localEntranceId, user, function (err, index) {
+    console.trace("Here I am!");
 
-        // If the 
+
+      indexOfStreamingUser(localEntranceId, user, function (err, index) {
+        // If the user is in the room, delete them
         if (index != -1) {
           console.log("User already in room... deleting user from room.")
           // Update the current streaming users
 
-          removeUserFromStreamingUsers(localEntranceId, user, function () {
+          removeUserFromStreamingUsers(localEntranceId, user, function (err, newStreamingSession) {
 
             // If there are no more users 
-            if (!currentStreamingSession.streamingUsers.length) {
+            if (!newStreamingSession.streamingUsers.length) {
 
               console.log("No users remaining in room!");
 
               // Let the client know to stop playing
+
               return hollaback({'action' : 'stop', 'message' : 'Empty session. Stopping Streaming.'});
+
             } else {
               // User left room, but people are still in room
               // TODO compute new tracks, send them down
@@ -108,11 +112,21 @@ function handleTap(localEntranceId, deviceId, hollaback) {
 
             getFacebookFavoriteArtists(user, function (artists) {
 
-              getTracksFromArtists(artists, function(tracks) {
+              getTracksFromArtists(artists, function (tracks) {
 
-                setTracksToStreamingSession(localEntranceId, tracks, function (err, streamingSession) {
+                //Temp*********
+                var bloop = [];
+                bloop.push(tracks[18]);
+                bloop.push(tracks[19]);
+                /**********************/
+                setTracksToStreamingSession(localEntranceId, bloop, function (err, streamingSession) {
+
+                  console.log("Added some tracks which are: " + streamingSession.tracks);
+
                   if (err) {
+
                     console.log(err.message);
+
                     return hollaback({'error': err.message});
                   }
                     return hollaback({'action': 'play', 'message': 'User added to session. Reforming track list on server.'});
@@ -128,12 +142,40 @@ function handleTap(localEntranceId, deviceId, hollaback) {
 
 app.get('/:localEntranceId/stream', function (req, res) {
   getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
-    if (currentStreamingSession.tracks) {
-      var url = currentStreamingSession.tracks[0];
-      console.log(currentStreamingSession);
 
+    console.log("This is yo streaming session: " + stringify(currentStreamingSession));
+    // (Hopefully this session has tracks)
+    if (currentStreamingSession.tracks) {
+
+      // Grab a random track URL
+      // console.log("Beginning to send tracks with streaming session: " + stringify(currentStreamingSession));
+     return streamTracks(req, res, currentStreamingSession);
+      
+    } else {
+
+      // Something weird happened if there aren't any tracks
+      res.send("Shit. There are no tracks.");
+    }
+  });
+});
+
+function streamTracks(request, response, streamingSession) {
+  
+  if (streamingSession.tracks.length != 0) {
+
+    // Grab a random URL
+    var url = streamingSession.tracks[Math.floor(Math.random() * streamingSession.tracks.length)];
+
+    console.log("Song starting : " + streamingSession.tracks.length + " songs left to play.");
+
+    removeTrackFromStreamingSession(request.params.localEntranceId, url, function (err, revisedStreamingSession) {
+
+      // Fetch a track from the URL
       var track = sp.Track.getFromUrl(url); 
+
+      // When the track is ready
       track.on('ready', function() {
+
         // Grab the player
         var player = spotifySession.getPlayer();
 
@@ -142,84 +184,37 @@ app.get('/:localEntranceId/stream', function (req, res) {
 
         // Start playing it
         player.play();
-        player.pipe(res);
+
+        // Pipe the result
+        player.pipe(response);
+
+        // When the player finishes
         player.once('track-end', function() {
-          console.log("Song ended.");
+
           player.stop();
-          res.end();
+
+          // Log that it's over
+          console.log("Song ended. " + revisedStreamingSession.tracks.length + "songs left to play.");
+
+          streamTracks(request, response, revisedStreamingSession);
         });
       });
-    } else {
-      res.send("Shit");
-    }
-  });
-  console.log("okay.");
-});
+    });
+  }  
 
-app.get('/testtrackstream', function(req, res) {
-  var trackurls = [
-    "spotify:track:3kyxRga5wDGbKdmxXssbps",
-    "spotify:track:4Sfa7hdVkqlM8UW5LsSY3F",
-    "spotify:track:5JLv62qFIS1DR3zGEcApRt",
-    "spotify:track:3FtYbEfBqAlGO46NUDQSAt",
-    "spotify:track:3kZC0ZmFWrEHdUCmUqlvgZ",
-    "spotify:track:0DiWol3AO6WpXZgp0goxAV",
-    "spotify:track:02GjIfCpwttPAikjm5Hwcb",
-    "spotify:track:6GskIhdM6TN6EkPgeSjVfW",
-    "spotify:track:6cFGBqZhdunaq1QSeFcNxb",
-    "spotify:track:6c9t15M38cWxyt3uLnLfD8",
-    "spotify:track:7hExqd5aeA6cdDFx6sBfd3",
-    "spotify:track:4WcCW10tnJCljX8Fhs0FdE",
-    "spotify:track:1595LW73XBxkRk2ciQOHfr",
-    "spotify:track:2GAIycsMaDVtMtdvxzR2xI",
-    "spotify:track:6m5D7zGVbzAxceDXQTsRSX",
-    "spotify:track:5OmcnFH77xm4IETrbEvhlq",
-    "spotify:track:34dAuFhftSbjLWksf8c73i",
-    "spotify:track:66AdsR6hDPlQxkASDqtRvK",
-    "spotify:track:2uljPrNySotVP1d42B30X2",
-    "spotify:track:2ZI6tCcxzTLwgbvUSHx1jQ",
-    "spotify:track:1rihwqlxLr1kL7zg5193FF",
-    "spotify:track:4x63WB2sLNrtBmuC1KpXL1",
-    "spotify:track:5YuJhe1jfUYb8b3jf2IZM0",
-    "spotify:track:14K3uhvuNqH8JUKcOmeea6",
-    "spotify:track:5udnrY00yVUOAzupil2H56",
-    "spotify:track:1Vf7Fq4CQovc7fcEau2pGk",
-    "spotify:track:63vL5oxWrlvaJ0ayNaQnbX",
-    "spotify:track:2UODQhPzz51lssoMPOlfy5",
-    "spotify:track:3IA8ZvkUTdXC2IQVbZjWW7",
-    "spotify:track:53OAjBw9irOKWuo8yhoQIE",
-    "spotify:track:7raciFPVU5VuHmqVbw2c1h",
-    "spotify:track:4M7z4iHTPyg8rbKdHQspkb",
-    "spotify:track:0xdFtX8aovrebhSfUOYLJF",
-    "spotify:track:4RIyjMUeIN98EmmL8pFXRZ",
-    "spotify:track:28mDNsS5UqugybN5xRp3FB",
-    "spotify:track:1zdGCM41JB7vPS5mfo9mez",
-    "spotify:track:3GzKSyxXnVgjpg9tOZUcLa",
-    "spotify:track:12jIOpe6I270V8hs0XDUOk",
-    "spotify:track:41NjE1A4oAwGsBLqn6CiZx"
-  ];
-  var url = trackurls[Math.floor(Math.random() * trackurls.length)];
+  else {
 
-  var track = sp.Track.getFromUrl(url); 
-  track.on('ready', function() {
-    // Grab the player
+    console.log("There are no more tracks");
+
     var player = spotifySession.getPlayer();
 
-    // Load the given track
-    player.load(track);
+    // Stop the player
+    player.stop();
 
-    // Start playing it
-    player.play();
-    player.pipe(res);
-    player.once('track-end', function() {
-      player.stop();
-      res.end();
-    });
-
-  });
-  
-});
-
+        // End the response
+    response.end();
+  }
+}
 /*
  * Wrapper method for HTTP GETs
  */
@@ -310,7 +305,7 @@ function getTracksFromArtists(artists, callback) {
         search.once('ready', function() {
           // If there aren't any searches
           if(!search.tracks.length) {
-              console.error('there is no track to play :[ for artist ' + artist);
+              // console.error('there is no track to play :[ for artist ' + artist);
           } else {
             // Add the track to the rest of the tracks
             for (var i = 0; i < search.tracks.length; i++) {
@@ -357,7 +352,7 @@ function shuffle(list) {
 function getUserFromStreamers(localEntranceId, userJSON, callback) {
   getCurrentStreamers(localEntranceId, function(err, currentStreamers) {
     if (!currentStreamers || err) {
-      callback(err, null);
+      return callback(err, null);
     } else {
       return callback(err, streamingUserForUserJSON(currentStreamers, userJSON));
     }
@@ -366,15 +361,16 @@ function getUserFromStreamers(localEntranceId, userJSON, callback) {
 
 function setCurrentStreamingSession(localEntranceId, streamingSession, callback) {
   streamingSession.save(function (err) {
-    callback(err);
+    return callback(err, streamingSession);
   });
 }
 
 function getCurrentStreamingSession(localEntranceId, callback) {
+  console.log("Get Current Streaming Session");
   assert(localEntranceId);
   StreamingSession.findOne( { localEntranceId : localEntranceId }, function(err, streamingSession) {
     if (err) {
-      callback (err, null);
+      return callback (err, null);
     } 
     else {
       if (!streamingSession) {
@@ -385,8 +381,11 @@ function getCurrentStreamingSession(localEntranceId, callback) {
             return callback(null, streamingSession);
           }
         })
-      } 
-      callback(null, streamingSession);
+      }
+      // Else if blah blah blah 
+      else {
+        return callback(null, streamingSession);
+      }
     }
   })
 }
@@ -395,19 +394,27 @@ function addUserToStreamingUsers(localEntranceId, user, callback) {
   getCurrentStreamingSession(localEntranceId, function (err, streamingSession) {
     streamingSession.streamingUsers.push(user);
     setCurrentStreamingSession(localEntranceId, streamingSession, function (err) {
-      callback(err, streamingSession);
+      return callback(err, streamingSession);
     });
   });
 }
 
 function setTracksToStreamingSession(localEntranceId, tracks, callback) {
-  console.log("Saving tracks to streaming session: " + tracks);
   getCurrentStreamingSession(localEntranceId, function (err, streamingSession) {
     streamingSession.tracks = tracks;
-    console.log(stringify(streamingSession));
     setCurrentStreamingSession(localEntranceId, streamingSession, function (err) {
       if (err) console.log("Error saving tracks!");
-      callback(err, streamingSession);
+      return callback(err, streamingSession);
+    });
+  });
+}
+
+function removeTrackFromStreamingSession(localEntranceId, track, callback) {
+  getCurrentStreamingSession(localEntranceId, function (err, streamingSession) {
+    streamingSession.tracks.splice(streamingSession.tracks.indexOf(track), 1, null);
+    setCurrentStreamingSession(localEntranceId, streamingSession, function (err, revisedStreamingSession) {
+      if (err) console.log("Error saving tracks!");
+      return callback(err, revisedStreamingSession);
     });
   });
 }
@@ -422,11 +429,12 @@ function removeUserFromStreamingUsers(localEntranceId, userInQuestion, callback)
       }
     }
 
-    setCurrentStreamingSession(localEntranceId, streamingSession, callback);
+    return setCurrentStreamingSession(localEntranceId, streamingSession, callback);
   });
 }
 
 function indexOfStreamingUser (localEntranceId, userInQuestion, callback) {
+  console.log("Get Current Streaming Session");
   assert(userInQuestion, "user must not be null");
   getCurrentStreamingSession(localEntranceId, function (err, streamingSession) {
 
@@ -517,5 +525,70 @@ function connectSpotify (appKey, callback) {
     callback(spotifySession);
   });
 }
+
+app.get('/testtrackstream', function(req, res) {
+  var trackurls = [
+    "spotify:track:3kyxRga5wDGbKdmxXssbps",
+    "spotify:track:4Sfa7hdVkqlM8UW5LsSY3F",
+    "spotify:track:5JLv62qFIS1DR3zGEcApRt",
+    "spotify:track:3FtYbEfBqAlGO46NUDQSAt",
+    "spotify:track:3kZC0ZmFWrEHdUCmUqlvgZ",
+    "spotify:track:0DiWol3AO6WpXZgp0goxAV",
+    "spotify:track:02GjIfCpwttPAikjm5Hwcb",
+    "spotify:track:6GskIhdM6TN6EkPgeSjVfW",
+    "spotify:track:6cFGBqZhdunaq1QSeFcNxb",
+    "spotify:track:6c9t15M38cWxyt3uLnLfD8",
+    "spotify:track:7hExqd5aeA6cdDFx6sBfd3",
+    "spotify:track:4WcCW10tnJCljX8Fhs0FdE",
+    "spotify:track:1595LW73XBxkRk2ciQOHfr",
+    "spotify:track:2GAIycsMaDVtMtdvxzR2xI",
+    "spotify:track:6m5D7zGVbzAxceDXQTsRSX",
+    "spotify:track:5OmcnFH77xm4IETrbEvhlq",
+    "spotify:track:34dAuFhftSbjLWksf8c73i",
+    "spotify:track:66AdsR6hDPlQxkASDqtRvK",
+    "spotify:track:2uljPrNySotVP1d42B30X2",
+    "spotify:track:2ZI6tCcxzTLwgbvUSHx1jQ",
+    "spotify:track:1rihwqlxLr1kL7zg5193FF",
+    "spotify:track:4x63WB2sLNrtBmuC1KpXL1",
+    "spotify:track:5YuJhe1jfUYb8b3jf2IZM0",
+    "spotify:track:14K3uhvuNqH8JUKcOmeea6",
+    "spotify:track:5udnrY00yVUOAzupil2H56",
+    "spotify:track:1Vf7Fq4CQovc7fcEau2pGk",
+    "spotify:track:63vL5oxWrlvaJ0ayNaQnbX",
+    "spotify:track:2UODQhPzz51lssoMPOlfy5",
+    "spotify:track:3IA8ZvkUTdXC2IQVbZjWW7",
+    "spotify:track:53OAjBw9irOKWuo8yhoQIE",
+    "spotify:track:7raciFPVU5VuHmqVbw2c1h",
+    "spotify:track:4M7z4iHTPyg8rbKdHQspkb",
+    "spotify:track:0xdFtX8aovrebhSfUOYLJF",
+    "spotify:track:4RIyjMUeIN98EmmL8pFXRZ",
+    "spotify:track:28mDNsS5UqugybN5xRp3FB",
+    "spotify:track:1zdGCM41JB7vPS5mfo9mez",
+    "spotify:track:3GzKSyxXnVgjpg9tOZUcLa",
+    "spotify:track:12jIOpe6I270V8hs0XDUOk",
+    "spotify:track:41NjE1A4oAwGsBLqn6CiZx"
+  ];
+  var url = trackurls[Math.floor(Math.random() * trackurls.length)];
+
+  var track = sp.Track.getFromUrl(url); 
+  track.on('ready', function() {
+    // Grab the player
+    var player = spotifySession.getPlayer();
+
+    // Load the given track
+    player.load(track);
+
+    // Start playing it
+    player.play();
+    player.pipe(res);
+    player.once('track-end', function() {
+      player.stop();
+      res.end();
+    });
+
+  });
+  
+});
+
 
 initializeServerAndDatabase();
