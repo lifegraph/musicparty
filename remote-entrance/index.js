@@ -216,7 +216,7 @@ function streamTracks(request, response, streamingSession) {
         // When the player finishes
         player.once('track-end', function() {
 
-          player.stop();
+          // player.stop();
 
           // Log that it's over
           console.log("Song ended. " + revisedStreamingSession.tracks.length + "songs left to play.");
