@@ -44,7 +44,7 @@ app.configure('development', function(){
 });
 
 // Electric imp endpoint for Entrance taps.
-app.post('/eimp/handleTap', function(req, res) {
+app.post('/eimp/tap', function(req, res) {
   // Parse content.
   var POST = req.body;
   var jsonstring = POST.value;
