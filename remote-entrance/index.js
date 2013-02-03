@@ -132,6 +132,7 @@ app.get('/:localEntranceId/stream', function (req, res) {
         player.play();
         player.pipe(res);
         player.once('track-end', function() {
+          console.log("Song ended.");
           player.stop();
           res.end();
         });
