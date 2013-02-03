@@ -130,6 +130,7 @@ app.get('/:localEntranceId/stream', function (req, res) {
       player.once('track-end', function() {
         player.stop();
         res.end();
+        res.redirect('/' + req.params.localEntranceId + '/stream');
       });
     });
   });
