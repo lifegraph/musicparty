@@ -225,6 +225,7 @@ function streamTracks(request, response, streamingSession) {
         });
         if (!gooone) {
           gooone = true;
+          console.log(JSON.stringify(player, undefined, 2));
           streamTracks(request, response, revisedStreamingSession);
         }
       });
