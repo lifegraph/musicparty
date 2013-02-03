@@ -119,6 +119,7 @@ app.get('/:localEntranceId/stream', function (req, res) {
   getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
     if (currentStreamingSession.tracks) {
       var url = currentStreamingSession.tracks[0];
+      console.log("url:%s", url);
 
       var track = sp.Track.getFromUrl(url); 
       track.on('ready', function() {
