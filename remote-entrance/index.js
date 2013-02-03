@@ -113,6 +113,8 @@ app.get('/:localEntranceId/:deviceId/tap', function (req, res) {
 
 app.get('/:localEntranceId/stream', function (req, res) {
   getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
+    console.log(tracks);
+    console.log(currentStreamingSession.tracks);
     assert(currentStreamingSession.tracks);
     var url = currentStreamingSession.tracks[0];
 
