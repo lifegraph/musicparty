@@ -21,7 +21,7 @@ List of "Favorite" music sources to support:
 What to do at hackathon tonight!:
 * Squirrel (PAUL)
 * Local Host -> Arduino (PAUL)
-* Hack together a speaker
+* Hack together a speaker 
 * Music Intersection
 * Streaming constantly (JON)
 * Commands working (JON)

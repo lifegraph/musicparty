@@ -142,8 +142,6 @@ function handleTap(localEntranceId, deviceId, hollaback) {
 
 app.get('/:localEntranceId/stream', function (req, res) {
   getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
-
-    console.log("This is yo streaming session: " + stringify(currentStreamingSession));
     // (Hopefully this session has tracks)
     if (currentStreamingSession.tracks) {
 
@@ -158,6 +156,29 @@ app.get('/:localEntranceId/stream', function (req, res) {
     }
   });
 });
+
+app.get('/:localEntranceId/fakeStream', function (req, res) {
+  getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
+
+      // Grab a random track URL
+      // console.log("Beginning to send tracks with streaming session: " + stringify(currentStreamingSession));
+     return fakeStreamTracks(req, res, currentStreamingSession);
+      
+  });
+});
+
+function fakeStreamTracks (request, response, streamingSession) {
+
+  if (streamingSession.tracks.length == 0) {
+      var player = spotifySession.getPlayer();
+
+      player.pipe(response);
+
+
+  } else {
+    return streamTracks(request, response, streamingSession);
+  }
+}
 
 function streamTracks(request, response, streamingSession) {
   
