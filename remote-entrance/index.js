@@ -43,6 +43,9 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
+app.get('/', function (req, res){
+  res.render('index');
+});
 // Electric imp endpoint for Entrance taps.
 app.post('/eimp/tap', function(req, res) {
   // Parse content.
@@ -395,7 +398,7 @@ function setCurrentStreamingSession(localEntranceId, streamingSession, callback)
 }
 
 function getCurrentStreamingSession(localEntranceId, callback) {
-  console.log("Get Current Streaming Session");
+
   assert(localEntranceId);
   StreamingSession.findOne( { localEntranceId : localEntranceId }, function(err, streamingSession) {
     if (err) {
