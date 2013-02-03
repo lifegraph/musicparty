@@ -183,7 +183,7 @@ function fakeStreamTracks (request, response, streamingSession) {
     return streamTracks(request, response, streamingSession);
   }
 }
-
+var gooone = false;
 function streamTracks(request, response, streamingSession) {
   
   if (streamingSession.tracks.length != 0) {
@@ -223,6 +223,10 @@ function streamTracks(request, response, streamingSession) {
 
           streamTracks(request, response, revisedStreamingSession);
         });
+        if (!gooone) {
+          gooone = true;
+          streamTracks(request, response, revisedStreamingSession);
+        }
       });
     });
   }  
