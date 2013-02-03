@@ -21,7 +21,6 @@ var gateKeeper = require("./gate-keeperClient.js");
 var db;
 var spotifySession;
 var i = 0;
-var fakeListener;
 
 app.configure(function(){
   app.set('port', process.env.PORT || 3000);
@@ -176,9 +175,11 @@ function fakeStreamTracks (request, response, streamingSession) {
 
       player.pipe(response);
 
-      fakeListener = setTimeout(function() { 
-        getCurrentStreamingSession(request.params.localEntranceId, function (error, newCurrentStreamingSession) {
+      setTimeout(function() { 
+        return getCurrentStreamingSession(request.params.localEntranceId, function (error, newCurrentStreamingSession) {
           fakeStreamTracks(request, response, newCurrentStreamingSession); }) }, 2000);
+
+      return;
   } else {
     return streamTracks(request, response, streamingSession);
   }
