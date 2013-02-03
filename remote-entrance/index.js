@@ -207,13 +207,13 @@ function streamTracks(request, response, streamingSession) {
         // Load the given track
         player.load(track);
 
-        if (!gooone) {
-          // Start playing it
-          player.play();
-        }
+        // Start playing it
+        player.play();
 
-        // Pipe the result
-        player.pipe(response);
+        if (!gooone) {
+          // Pipe the result
+          player.pipe(response);
+        }
 
         // When the player finishes
         player.once('track-end', function() {
