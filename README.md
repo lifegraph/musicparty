@@ -19,13 +19,14 @@ List of "Favorite" music sources to support:
 * Last.fm (Starred Tracks)
 
 What to do at hackathon tonight!:
-* Squirrel
+* Squirrel (PAUL)
+* Local Host -> Arduino (PAUL)
 * Hack together a speaker
 * Music Intersection
-* Streaming constantly (PAUL)
+* Streaming constantly (JON)
 * Commands working (JON)
 * Preferences
-* Front End
+* Front End (JON)
 
 
 
