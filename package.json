@@ -11,7 +11,7 @@
     "libspotify": "git://github.com/Floby/node-libspotify.git",
     "mongoose": "~3.5.5",
     "serialport": "~1.0.8",
-    "knox":"latest"
+    "knox": "latest"
   },
   "engines": {
     "node": "0.8.x",
