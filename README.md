@@ -31,6 +31,10 @@ V4 - Attach a speaker to the device
 
 V5 - Stream over bluetooth (first via Jambox)
 
+When creating a Heroku Server, we need a build pack to deal with libspotify installation:
+```heroku create --stack cedar --buildpack https://github.com/lifegraph/heroku-buildpack-nodejs-libspotify.git```
+
+
 Libspotify may be a bitch on Heroku. The Library path has to be set correctly:
 
 ```heroku config:set LD_LIBRARY_PATH=/app/.heroku/vender/lib:/app/.heroku/libspotify/lib```
