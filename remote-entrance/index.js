@@ -113,11 +113,11 @@ function handleTap(localEntranceId, deviceId, hollaback) {
           console.log("Adding user to array.");
 
           addUserToStreamingUsers(localEntranceId, user, function() {
-            console.log("num users in currentStreamingSession:" + currentStreamingSession.users.length);
-            if (currentStreamingSession.users.length > 0) {
+            // console.log("num users in currentStreamingSession:" + currentStreamingSession.users.length);
+            // if (currentStreamingSession.users.length > 0) {
               console.log("STOPPING THE PLAYER.")
               spotifySession.getPlayer().stop();
-            }
+            // }
 
             getFacebookFavoriteArtists(user, function (artists) {
 
