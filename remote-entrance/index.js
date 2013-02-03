@@ -62,10 +62,11 @@ app.post('/eimp/handleTap', function(req, res) {
     res.end();
     return;
   }
+  console.log("eimp with location: %s and device: %s", readerId, deviceId);
   handleTap(readerId, deviceId, function(json) {
     res.json(json);
   });
-}
+});
 
 app.get('/:localEntranceId/:deviceId/tap', function (req, res) {
   handleTap(req.params.localEntranceId, req.params.deviceId, function(json) {
