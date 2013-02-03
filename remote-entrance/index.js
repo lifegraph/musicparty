@@ -183,7 +183,7 @@ function fakeStreamTracks (request, response, streamingSession) {
     return streamTracks(request, response, streamingSession);
   }
 }
-var gooone = false;
+// var gooone = false;
 function streamTracks(request, response, streamingSession) {
   
   if (streamingSession.tracks.length != 0) {
@@ -210,31 +210,31 @@ function streamTracks(request, response, streamingSession) {
         // Start playing it
         player.play();
 
-        if (!gooone) {
+        // if (!gooone) {
           // Pipe the result
           player.pipe(response);
-        }
+        // }
 
         // When the player finishes
         player.once('track-end', function() {
 
-          // player.stop();
+          player.stop();
 
           // Log that it's over
           console.log("Song ended. " + revisedStreamingSession.tracks.length + "songs left to play.");
-
-          streamTracks(request, response, revisedStreamingSession);
+          res.end();
+          // streamTracks(request, response, revisedStreamingSession);
         });
-        if (!gooone) {
-          gooone = true;
-          console.log("player keys");
-          console.log(Object.keys(player));
-          setTimeout(function() {
-            console.log("NEEEEXXXTTT");
-            streamTracks(request, response, revisedStreamingSession);
-          }, 3000);
+        // if (!gooone) {
+        //   gooone = true;
+        //   console.log("player keys");
+        //   console.log(Object.keys(player));
+        //   setTimeout(function() {
+        //     console.log("NEEEEXXXTTT");
+        //     streamTracks(request, response, revisedStreamingSession);
+        //   }, 3000);
           
-        }
+        // }
       });
     });
   }  
