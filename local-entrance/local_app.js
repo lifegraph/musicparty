@@ -9,8 +9,8 @@ var arduino_port = "/dev/cu.usbmodemfa131";
 //   parser: serialport.parsers.readline("\n") 
 // });
 
-var host = 'localhost'
-var port = 5000;
+var host = 'entranceapp.herokuapp.com'
+var port = 00;
 
 var trying_to_connect_uid = null; // the fob id that we are trying to connect to
 var last_uid_to_connect = null; // the last id that actually connected successfully

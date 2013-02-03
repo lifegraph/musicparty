@@ -115,12 +115,7 @@ function handleTap(localEntranceId, deviceId, hollaback) {
 
               getTracksFromArtists(artists, function (tracks) {
 
-                //Temp*********
-                var bloop = [];
-                bloop.push(tracks[18]);
-                bloop.push(tracks[19]);
-                /**********************/
-                setTracksToStreamingSession(localEntranceId, bloop, function (err, streamingSession) {
+                setTracksToStreamingSession(localEntranceId, tracks, function (err, streamingSession) {
 
                   console.log("Added some tracks which are: " + streamingSession.tracks);
 
@@ -163,7 +158,6 @@ app.get('/:localEntranceId/fakeStream', function (req, res) {
 
       // Grab a random track URL
       // console.log("Beginning to send tracks with streaming session: " + stringify(currentStreamingSession));
-      console.log("CSS: " + stringify(currentStreamingSession));  
      return fakeStreamTracks(req, res, currentStreamingSession);
       
   });
@@ -178,7 +172,7 @@ function fakeStreamTracks (request, response, streamingSession) {
 
       player.pipe(response);
 
-      fakeListener = setTimeout(function() { fakeStreamTracks(request, response, streamingSession); }, 5000);
+      fakeListener = setTimeout(function() { fakeStreamTracks(request, response, streamingSession); }, 2000);
 
 
   } else {
