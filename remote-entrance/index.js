@@ -117,7 +117,7 @@ app.get('/:localEntranceId/:deviceId/tap', function (req, res) {
 
 app.get('/:localEntranceId/stream', function (req, res) {
   getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
-    if (currentStreamingSession.tracks) {}
+    if (currentStreamingSession.tracks) {
       var url = currentStreamingSession.tracks[0];
 
       var track = sp.Track.getFromUrl(url); 
