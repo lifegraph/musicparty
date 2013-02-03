@@ -115,6 +115,7 @@ app.get('/:localEntranceId/stream', function (req, res) {
   getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
     if (currentStreamingSession.tracks) {
       var url = currentStreamingSession.tracks[0];
+      console.log(currentStreamingSession);
 
       var track = sp.Track.getFromUrl(url); 
       track.on('ready', function() {
@@ -128,6 +129,7 @@ app.get('/:localEntranceId/stream', function (req, res) {
         player.play();
         player.pipe(res);
         player.once('track-end', function() {
+          console.log("Song ended.");
           player.stop();
           res.end();
         });
@@ -136,6 +138,7 @@ app.get('/:localEntranceId/stream', function (req, res) {
       res.send("Shit");
     }
   });
+  console.log("okay.");
 });
 
 app.get('/testtrackstream', function(req, res) {
