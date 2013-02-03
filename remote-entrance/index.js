@@ -475,5 +475,4 @@ function connectSpotify (appKey, callback) {
   });
 }
 
-
 initializeServerAndDatabase();
