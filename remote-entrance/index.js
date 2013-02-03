@@ -169,6 +169,8 @@ function fakeStreamTracks (request, response, streamingSession) {
 
   console.log("received CSS: " + streamingSession);
 
+  fakeListener = nil;
+
   if (streamingSession.tracks.length == 0) {
       var player = spotifySession.getPlayer();
 
@@ -178,7 +180,6 @@ function fakeStreamTracks (request, response, streamingSession) {
         getCurrentStreamingSession(request.params.localEntranceId, function (error, newCurrentStreamingSession) {
           fakeStreamTracks(request, response, newCurrentStreamingSession); }) }, 2000);
   } else {
-    fakeListener = nil;
     return streamTracks(request, response, streamingSession);
   }
 }
