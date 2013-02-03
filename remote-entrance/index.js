@@ -495,7 +495,6 @@ function initializeServerAndDatabase() {
       key: process.env.S3_KEY
     , secret: process.env.S3_SECRET
     , bucket: process.env.S3_BUCKET
-    , endpoint: 
     });
 
     // Make the call to grab out key
