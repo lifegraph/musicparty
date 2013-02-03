@@ -19,7 +19,7 @@ var clear_timeout; // clear timeout object itself to allow reset of last tagged 
 
 // var my_fbid = "jon.mckay";
 // var my_fbid = "timcameronryan";
-var fakeUID = "0x010x010x010x02"
+var fakeUID = "30f911883803c643"
 var realFakeUID = "0x8E 0xDD 0x5B 0xA5"
 
 // serialPort.on("open", function (){
@@ -109,50 +109,32 @@ function stopPlaying() {
 }
 
 function testFunc() {
-  HTTP_GET( host, '/' + fakeUID + '/' + encodeURIComponent(realFakeUID) + "/tap", port, function(error, jsonResponse) {
-      if (error) {
-        console.log("Error fetching tracks from Entrance backend: " + error.message);
-        return;
-      }
+
+    var play = spawn('play', ['-r', 44100, '-b', 16, '-L', '-c', 2, '-e', 'signed-integer', '-t', 'raw', '-']);
+
+    var options = {
+    port: port,
+    host: host,
+    path: '/' + fakeUID + '/' + 'fakeStream'
+    };
 
 
-      // switch(jsonResponse.action) {
-      //   case 'play':
-      //     beginPlaying();
-      //     break;
-      //   case 'continue':
-      //     continuePlaying();
-      //     break;
-      //   case 'stop':
-      //     stopPlaying();
-      // }
+    http.get(options, function(res) {
 
-      var play = spawn('play', ['-r', 44100, '-b', 16, '-L', '-c', 2, '-e', 'signed-integer', '-t', 'raw', '-']);
-
-      var options = {
-      port: port,
-      host: host,
-      path: '/' + fakeUID + '/' + 'stream'
-      };
-
-
-      http.get(options, function(res) {
-
-      res.on('error', function(e) {
-        console.log('HTTP Error!');
-        return;
-      });
-
-      res.on('data', function(chunk) {
-        console.log(chunk);
-      });
-
-      res.pipe(play.stdin);
-
-      res.on('end', function(e) {
-        console.log("We're done streaming");
-      })
+    res.on('error', function(e) {
+      console.log('HTTP Error!');
+      return;
     });
+
+    res.on('data', function(chunk) {
+      console.log(chunk);
+    });
+
+    res.pipe(play.stdin);
+
+    res.on('end', function(e) {
+      console.log("We're done streaming");
+    })
   });
 }
 

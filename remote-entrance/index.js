@@ -21,6 +21,7 @@ var gateKeeper = require("./gate-keeperClient.js");
 var db;
 var spotifySession;
 var i = 0;
+var fakeListener;
 
 app.configure(function(){
   app.set('port', process.env.PORT || 3000);
@@ -162,6 +163,7 @@ app.get('/:localEntranceId/fakeStream', function (req, res) {
 
       // Grab a random track URL
       // console.log("Beginning to send tracks with streaming session: " + stringify(currentStreamingSession));
+      console.log("CSS: " + stringify(currentStreamingSession));  
      return fakeStreamTracks(req, res, currentStreamingSession);
       
   });
@@ -169,10 +171,14 @@ app.get('/:localEntranceId/fakeStream', function (req, res) {
 
 function fakeStreamTracks (request, response, streamingSession) {
 
+  console.log("received CSS: " + streamingSession);
+
   if (streamingSession.tracks.length == 0) {
       var player = spotifySession.getPlayer();
 
       player.pipe(response);
+
+      fakeListener = setTimeout(function() { fakeStreamTracks(request, response, streamingSession); }, 5000);
 
 
   } else {
@@ -610,6 +616,5 @@ app.get('/testtrackstream', function(req, res) {
   });
   
 });
-
 
 initializeServerAndDatabase();
