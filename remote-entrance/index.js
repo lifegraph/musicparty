@@ -44,7 +44,7 @@ app.configure('development', function(){
 });
 
 
-app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
+app.get('/:localEntranceId/:deviceId/tap', function (req, res) {
 
   gateKeeper.requestUser(req.params.deviceId, function (error, user) {
     // If we have an error, then there was a problem with the HTTP call
@@ -74,11 +74,11 @@ app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
               console.log("No users remaining in room!");
 
               // Let the client know to stop playing
-              return res.json({'action' : 'stop', 'tracks' : null});
+              return res.json({'action' : 'stop', 'message' : 'Empty session. Stopping Streaming.'});
             } else {
               // User left room, but people are still in room
               // TODO compute new tracks, send them down
-              return res.json({'action' : 'continue', 'tracks' : null});
+              return res.json({'action' : 'continue', 'message' : 'User removed from session. Reforming track list on server.'});
             }
           });
         } 
@@ -89,27 +89,47 @@ app.get('/:localEntranceId/:deviceId/tracks', function (req, res) {
           console.log("Adding user to array.");
 
           addUserToStreamingUsers(req.params.localEntranceId, user, function() {
-          // Grab the tracks for these new users
-            // getTracksForUsers(currentStreamingUsers);
 
-
-              // Once we have the user, retrieve all the user source preferences from the db 
-              // (we may need several access tokens for different services?)
-
-              // Retrieve appropriate songs from each of the sources
-
-              // Package up the songs into JSON?
-
-            // getFacebookFavoriteArtists(user, null);
             getFacebookFavoriteArtists(user, function (artists) {
-              getSongsFromArtists(artists, function(songs) {
-                console.log("SONGS:");
-                console.log(songs);
-                res.json({'action': 'play', 'tracks': songs});
+
+              getTracksFromArtists(artists, function(tracks) {
+
+                setTracksToStreamingSession(req.params.localEntranceId, tracks, function (err, streamingSession) {
+
+                  if (err) {
+                    console.log(err.message);
+                    return res.json({'error': err.message});
+                  }
+                    return res.json({'action': 'play', 'message': 'User added to session. Reforming track list on server.'});
+                });
               });
             });  
           });
         }
+      });
+    });
+  });
+});
+
+app.get('/:localEntranceId/stream', function (req, res) {
+  getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
+    assert(currentStreamingSession.tracks);
+    var url = currentStreamingSession.tracks[0];
+
+    var track = sp.Track.getFromUrl(url); 
+    track.on('ready', function() {
+      // Grab the player
+      var player = spotifySession.getPlayer();
+
+      // Load the given track
+      player.load(track);
+
+      // Start playing it
+      player.play();
+      player.pipe(res);
+      player.once('track-end', function() {
+        player.stop();
+        res.end();
       });
     });
   });
@@ -247,7 +267,7 @@ function getFacebookFavoriteArtists(facebookUser, callback) {
  * Gets the songs associated with each artist in the array artists.
  */
 
-function getSongsFromArtists(artists, callback) {
+function getTracksFromArtists(artists, callback) {
       var loadedTracks = 0;
       var tracks = [];
       if (!artists.length) {
@@ -272,8 +292,6 @@ function getSongsFromArtists(artists, callback) {
               console.error('there is no track to play :[ for artist ' + artist);
           } else {
             // Add the track to the rest of the tracks
-            console.log(search.tracks);
-            console.log(search.tracks[0]);
             for (var i = 0; i < search.tracks.length; i++) {
               if (search.tracks[i].availability == "AVAILABLE") {
                 tracks.push(search.tracks[i]);
@@ -368,6 +386,15 @@ function addUserToStreamingUsers(localEntranceId, user, callback) {
   });
 }
 
+function setTracksToStreamingSession(localEntranceId, tracks, callback) {
+  getCurrentStreamingSession(localEntranceId, function (err, streamingSession) {
+    streamingSession.tracks = tracks;
+    setCurrentStreamingSession(localEntranceId, streamingSession, function (err) {
+      callback(err, streamingSession);
+    });
+  });
+}
+
 function removeUserFromStreamingUsers(localEntranceId, userInQuestion, callback) {
 
   getCurrentStreamingSession(localEntranceId, function (err, streamingSession) {
@@ -407,7 +434,6 @@ function initializeServerAndDatabase() {
   // Start database and get things running
   console.log("connecting to database at " + app.get('dburl'));
 
-  // console.log("EV: " + ENV['TEST']);
   mongoose.connect(app.get('dburl'));
 
   db = mongoose.connection;

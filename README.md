@@ -18,6 +18,11 @@ List of "Favorite" music sources to support:
 * Rdio (User Collections)
 * Last.fm (Starred Tracks)
 
+What to do at hackathon tonight!:
+* Set up Squirrel Code for E-Imp
+* Set up endpoints for taps and plays
+* Get Bluetooth working?
+
 
 
 
