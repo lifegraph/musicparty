@@ -96,15 +96,11 @@ app.get('/:localEntranceId/:deviceId/tap', function (req, res) {
 
                 setTracksToStreamingSession(req.params.localEntranceId, tracks, function (err, streamingSession) {
 
-                  getCurrentStreamingSession(req.params.localEntranceId, function (err, streamingSession) {
-                    console.log("Tracks after saving them? " + streamingSession.tracks);
-                  });
-
-                  // if (err) {
-                  //   console.log(err.message);
-                  //   return res.json({'error': err.message});
-                  // }
-                  //   return res.json({'action': 'play', 'message': 'User added to session. Reforming track list on server.'});
+                  if (err) {
+                    console.log(err.message);
+                    return res.json({'error': err.message});
+                  }
+                    return res.json({'action': 'play', 'message': 'User added to session. Reforming track list on server.'});
                 });
               });
             });  
@@ -390,8 +386,6 @@ function setTracksToStreamingSession(localEntranceId, tracks, callback) {
   console.log("Saving tracks to streaming session: " + tracks);
   getCurrentStreamingSession(localEntranceId, function (err, streamingSession) {
     streamingSession.tracks = tracks;
-    console.log("Saving tracks to streaming session (in callback) : " + tracks);
-    console.log("Saving tracks to streaming session (in object) : " + streamingSession.tracks);
     console.log(stringify(streamingSession));
     setCurrentStreamingSession(localEntranceId, streamingSession, function (err) {
       if (err) console.log("Error saving tracks!");

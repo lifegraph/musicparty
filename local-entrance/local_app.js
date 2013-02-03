@@ -47,7 +47,7 @@ serialPort.on("data", function (data) {
       return;
     }
     
-    HTTP_GET('localhost', '/' + fakeUID + '/' + encodeURIComponent(trying_to_connect_uid) + "/tap", 5000, function(error, jsonResponse) {
+    HTTP_GET('entranceapp.herokuapp.com', '/' + fakeUID + '/' + encodeURIComponent(trying_to_connect_uid) + "/tap", 00, function(error, jsonResponse) {
     	if (error) {
     		console.log("Error fetching tracks from Entrance backend: " + error.message);
     		return;
@@ -60,7 +60,7 @@ serialPort.on("data", function (data) {
 
         var options = {
         port:5000,
-        host: 'localhost',
+        host: 'entranceapp.herokuapp.com',
         path: '/' + fakeUID + '/' + 'stream'
         };
 
@@ -98,7 +98,6 @@ serialPort.on("data", function (data) {
     	// }
     	// trackRecord.playTracks(jsonResponse);
     	
-    	console.log("Response from entrance backend: " + jsonResponse);
     	set_last_uid_to_connect(trying_to_connect_uid);
 
     });

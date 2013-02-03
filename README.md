@@ -19,10 +19,13 @@ List of "Favorite" music sources to support:
 * Last.fm (Starred Tracks)
 
 What to do at hackathon tonight!:
-* Set up Squirrel Code for E-Imp
-* Set up endpoints for taps and plays
-* Get Bluetooth working?
-
+* Squirrel
+* Hack together a speaker
+* Music Intersection
+* Streaming constantly (PAUL)
+* Commands working (JON)
+* Preferences
+* Front End
 
 
 
