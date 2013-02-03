@@ -1,8 +1,6 @@
 var http = require('http');
 var spawn = require('child_process').spawn;
 
-
-
 function listen() {
   try{
   var play = spawn('play', ['-r', 44100, '-b', 16, '-L', '-c', 2, '-e', 'signed-integer', '-t', 'raw', '-']);
