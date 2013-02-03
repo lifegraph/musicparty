@@ -12,7 +12,8 @@ var express = require('express')
   , StreamingSession = require('./models/StreamingSession')
   , mongoose = require('mongoose')
   , sp = require('libspotify')
-  , assert = require('assert');
+  , assert = require('assert')
+  , knox = require('knox');
 
 var app = express();
 var hostUrl = 'http://entranceapp.herokuapp.com';
@@ -413,26 +414,52 @@ function initializeServerAndDatabase() {
 
   db.on('error', console.error.bind(console, 'connection error:'));
   db.once('open', function callback () {
-    // yay!
+
     console.log("Connected to mongo.");
-    connectSpotify(function(spotifySession) {
-      console.log("Connected to Spotify.");
-      // Start server.
-      http.createServer(app).listen(app.get('port'), function(){
-        console.log("Express server listening on port " + app.get('port'));
-      });
+
+    // Create our s3 klient
+    var s3Client = knox.createClient({
+      key: process.env.S3_KEY
+    , secret: process.env.S3_SECRET
+    , bucket: process.env.S3_BUCKET
     });
+
+    // Make the call to grab out key
+    s3Client.get('spotify_appkey.key').on('response', function(res){
+
+      // Create the buffer to store bits
+      var appKey = [];
+
+      // Build the app key buffer
+      res.on('data', function (chunk){
+        appKey.push(chunk);
+      });
+
+      // When we're done collecting the key, connect to spotify
+      res.on("end", function() {
+        connectSpotify(Buffer.concat(appKey), function(spotifySession) {
+
+          // We've succesfully connected!
+          console.log("Connected to Spotify.");
+          // Start server.
+          http.createServer(app).listen(app.get('port'), function(){
+          console.log("Express server listening on port " + app.get('port'));
+          });
+        });
+      });
+    }).end();
+    // yay!
   });
 }
 
 /*
  * Beings a spotify session
  */
-function connectSpotify (callback) {
+function connectSpotify (appKey, callback) {
+
   // Create a spotify session wth our api key
-  console.log(process.env.SPOTIFY_KEYPATH);
   spotifySession = new sp.Session({
-    applicationKey: process.env.SPOTIFY_KEYPATH
+    applicationKey: appKey
   });
 
   console.log("Connecting to Spotify...")
