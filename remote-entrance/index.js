@@ -424,6 +424,7 @@ function initializeServerAndDatabase() {
     });
   });
 }
+
 /*
  * Beings a spotify session
  */
