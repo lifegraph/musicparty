@@ -451,9 +451,9 @@ function setTracksToStreamingSession(localEntranceId, tracks, callback) {
 
 function removeTrackFromStreamingSession(localEntranceId, track, callback) {
   getCurrentStreamingSession(localEntranceId, function (err, streamingSession) {
-    streamingSession.tracks.splice(streamingSession.tracks.indexOf(track), 1, null);
+    streamingSession.tracks.splice(streamingSession.tracks.indexOf(track), 1);
     setCurrentStreamingSession(localEntranceId, streamingSession, function (err, revisedStreamingSession) {
-      if (err) console.log("Error saving tracks!");
+      if (err) console.log("Error saving tracks! " + err);
       return callback(err, revisedStreamingSession);
     });
   });
