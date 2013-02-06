@@ -23,7 +23,8 @@ void setup() {
 
   if (client.connect()) {
     Serial.println("connected");
-    client.println("GET / HTTP/1.0");
+    client.println("GET /30f911883803c643/stream HTTP/1.0");
+    client.println("Host: entranceapp.herokuapp.com");
     client.println();
   } else {
     Serial.println("connection failed");
