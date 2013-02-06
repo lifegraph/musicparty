@@ -20,7 +20,7 @@ var hostUrl = 'http://entranceapp.herokuapp.com';
 var gateKeeper = require("./gate-keeperClient.js");
 var db;
 var spotifySession;
-var i = 0;
+var streamingResponses = [];
 
 app.configure(function(){
   app.set('port', process.env.PORT || 3000);
@@ -219,6 +219,9 @@ function streamTracks(request, response, streamingSession) {
         // Grab the player
         var player = spotifySession.getPlayer();
 
+        // Stop the player so we can load next track
+        player.stop();
+
         // Load the given track
         player.load(track);
 
@@ -228,18 +231,19 @@ function streamTracks(request, response, streamingSession) {
         // if (!gooone) {
           // Pipe the result
           player.pipe(response);
+          streamingResponses.push(response);
         // }
 
         // When the player finishes
-        player.once('track-end', function() {
+        // player.once('track-end', function() {
 
-          player.stop();
+        //   player.stop();
 
-          // Log that it's over
-          console.log("Song ended. " + revisedStreamingSession.tracks.length + "songs left to play.");
-          response.end();
-          // streamTracks(request, response, revisedStreamingSession);
-        });
+        //   // Log that it's over
+        //   console.log("Song ended. " + revisedStreamingSession.tracks.length + "songs left to play.");
+        //   response.end();
+        //   // streamTracks(request, response, revisedStreamingSession);
+        // });
       });
     });
   }  
@@ -257,6 +261,16 @@ function streamTracks(request, response, streamingSession) {
     response.end();
   }
 }
+
+// stops the player and ends all responses.
+function stopStreaming() {
+  player.stop();
+  streamingResponses.forEach(function(res) {
+    res.end();
+  });
+  streamingResponses = [];
+}
+
 /*
  * Wrapper method for HTTP GETs
  */
@@ -562,6 +576,12 @@ function connectSpotify (appKey, callback) {
   // Once we're logged in, continue with the callback
   spotifySession.once('login', function (err) {
     if (err) return console.error('Error:', err);
+    // Grab the player
+    var player = spotifySession.getPlayer();
+    // when a track ends, stop streaming
+    player.once('track-end', function() {
+      stopStreaming();
+    });
     callback(spotifySession);
   });
 }
@@ -615,17 +635,14 @@ app.get('/testtrackstream', function(req, res) {
     // Grab the player
     var player = spotifySession.getPlayer();
 
+    // stop so we can load track
+    player.stop();
     // Load the given track
     player.load(track);
-
     // Start playing it
     player.play();
-    player.pipe(res);
-    player.once('track-end', function() {
-      player.stop();
-      res.end();
-    });
 
+    player.pipe(res);
   });
   
 });

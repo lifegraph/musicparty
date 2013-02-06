@@ -4,7 +4,7 @@
 #include <SPI.h>
 #include <WiFly.h>
 
-WiFlyClient client("entranceapp.herokuapp.com", 80);
+WiFlyClient client("jezzpaul.com", 80);
 
 
 void setup() {
@@ -23,8 +23,8 @@ void setup() {
 
   if (client.connect()) {
     Serial.println("connected");
-    client.println("GET / HTTP/1.0");
-    client.println();
+    client.println("GET /");
+    client.println("Host: jezzpaul.com");
   } else {
     Serial.println("connection failed");
   }
