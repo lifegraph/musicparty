@@ -70,6 +70,7 @@ function handleTap(localEntranceId, deviceId, hollaback) {
     // or the user isn't in the db and they need to sync
     if (error) {
       console.log("We had an error with Gatekeeper: " + error.message);
+      return;
 
       // Send something to the local entrance device to let it know if
       // a.) there was a network error or b.) the device needs to sync
@@ -235,16 +236,6 @@ function streamTracks(request, response, streamingSession) {
           response.end();
           // streamTracks(request, response, revisedStreamingSession);
         });
-        // if (!gooone) {
-        //   gooone = true;
-        //   console.log("player keys");
-        //   console.log(Object.keys(player));
-        //   setTimeout(function() {
-        //     console.log("NEEEEXXXTTT");
-        //     streamTracks(request, response, revisedStreamingSession);
-        //   }, 3000);
-          
-        // }
       });
     });
   }  
