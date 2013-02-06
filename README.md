@@ -5,10 +5,22 @@ Helps you make an enTrance with your music
 
 To get it working:
 - Clone this directory
-- Make sure sox is install ('brew install sox')
+- Make sure sox is installed (`brew install sox`)
+- Make sure node is installed
 - Get a [LibSpotify API key](https://developer.spotify.com/technologies/libspotify/)
 - Set environment variables SPOTIFY_KEYPATH, SPOTIFY_USERNAME, SPOTIFY_PASSWORD to the path to your Spotify API key, your spotify username, and your spotify password, respectively.
-- Make sure the serial port in local_app.js is where your Arduino is connected to (we'll make this automatic later)
+- Load an Arduino Uno with local-entrance/entrance_arduino_ino/entrance_arduino_ino.ino
+- Get an ElectricImp.com account
+- Attach an Electric Imp shield and an Adafruit PN532 RFID/NFC Shield (13.56MHz RFID) to the Arduino
+- Put an Electric Imp into the shield, get the Electric Imp app to use BlinkUp to send the wifi data to the Electric Imp
+- Copy the contents of local-entrance/electric_imp/Entrance.nut into a new code block for Electric Imp in the Planner
+- Change the deviceId in line 4 of local-entrance/teststream.js to be the deviceId of your Electric Imp Impee board
+- Go to [Gate Keeper](http://fb-gate-keeper.herokuapp.com/) and sign up for Entrance
+- On the Sync Your Device page, tap your RFID reader with your RFID, refresh the page, and click the sync link
+- Ignore the preference page (work in progress). You are set up.
+- Run `node local-entrance/teststream.js`
+- Optionally, connect to a Jambox over Bluetooth because it is more awesome that way.
+- Tap the RFID reader with your tag after the EImp has connected to the wifi. It's that easy.
 
 List of "Favorite" music sources to support:
 * Facebook Favorite Artists... _done!_

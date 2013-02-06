@@ -70,8 +70,8 @@ function handleTap(localEntranceId, deviceId, hollaback) {
     // or the user isn't in the db and they need to sync
     if (error) {
       console.log("We had an error with Gatekeeper: " + error.message);
-      return;
-
+      
+      return hollaback({'error': "We had an error with Gatekeeper: " + error.message});
       // Send something to the local entrance device to let it know if
       // a.) there was a network error or b.) the device needs to sync
     } 
@@ -103,7 +103,6 @@ function handleTap(localEntranceId, deviceId, hollaback) {
 
             } else {
               // User left room, but people are still in room
-              // TODO compute new tracks, send them down
               return hollaback({'action' : 'continue', 'message' : 'User removed from session. Reforming track list on server.'});
             }
           });
@@ -115,6 +114,11 @@ function handleTap(localEntranceId, deviceId, hollaback) {
           console.log("Adding user to array.");
 
           addUserToStreamingUsers(localEntranceId, user, function() {
+            // console.log("num users in currentStreamingSession:" + currentStreamingSession.users.length);
+            // if (currentStreamingSession.users.length > 0) {
+              console.log("STOPPING THE PLAYER.")
+              spotifySession.getPlayer().stop();
+            // }
 
             getFacebookFavoriteArtists(user, function (artists) {
 
