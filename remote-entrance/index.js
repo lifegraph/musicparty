@@ -149,11 +149,11 @@ app.get('/:localEntranceId/stream', function (req, res) {
   console.log("request for /stream");
   getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
     // (Hopefully this session has tracks)
-    console.log("found streaming session:" + currentStreamingSession);
+    // console.log("found streaming session:" + currentStreamingSession);
     if (currentStreamingSession && currentStreamingSession.tracks) {
 
       // Grab a random track URL
-      console.log("Beginning to send tracks with streaming session: " + stringify(currentStreamingSession));
+      // console.log("Beginning to send tracks with streaming session: " + stringify(currentStreamingSession));
      return streamTracks(req, res, currentStreamingSession);
       
     } else {
@@ -200,7 +200,7 @@ function fakeStreamTracks (request, response, streamingSession) {
 // var gooone = false;
 function streamTracks(request, response, streamingSession) {
   console.log("stream tracks");
-  
+
   if (streamingSession.tracks.length != 0) {
 
     // Grab a random URL
@@ -209,12 +209,14 @@ function streamTracks(request, response, streamingSession) {
     console.log("Song starting : " + streamingSession.tracks.length + " songs left to play.");
 
     removeTrackFromStreamingSession(request.params.localEntranceId, url, function (err, revisedStreamingSession) {
-      console.log("removed url, now revisedStreamingSession:" + revisedStreamingSession);
+      // console.log("removed url, now revisedStreamingSession:" + revisedStreamingSession);
       // Fetch a track from the URL
+      console.log("new url:" + url);
       var track = sp.Track.getFromUrl(url);
 
       // When the track is ready
       track.on('ready', function() {
+        console.log('track ready.');
 
         // Grab the player
         var player = spotifySession.getPlayer();
@@ -264,6 +266,7 @@ function streamTracks(request, response, streamingSession) {
 
 // stops the player and ends all responses.
 function stopStreaming() {
+  console.log("Stop streaming for the "  + streamingResponses.length + " streams.");
   player.stop();
   streamingResponses.forEach(function(res) {
     res.end();
@@ -580,6 +583,7 @@ function connectSpotify (appKey, callback) {
     var player = spotifySession.getPlayer();
     // when a track ends, stop streaming
     player.once('track-end', function() {
+      console.log("track ended.");
       stopStreaming();
     });
     callback(spotifySession);
