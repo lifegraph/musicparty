@@ -96,7 +96,7 @@ function handleTap(localEntranceId, deviceId, hollaback) {
               // Let the client know to stop playing
 
               setTracksToStreamingSession(localEntranceId, [], function(err, streamingSession) {
-                spotifySession.getPlayer().stop();
+                stopStreaming();
               });
 
               return hollaback({'action' : 'stop', 'message' : 'Empty session. Stopping Streaming.'});
