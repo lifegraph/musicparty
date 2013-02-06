@@ -267,6 +267,7 @@ function streamTracks(request, response, streamingSession) {
 // stops the player and ends all responses.
 function stopStreaming() {
   console.log("Stop streaming for the "  + streamingResponses.length + " streams.");
+  var player = spotifySession.getPlayer();
   player.stop();
   streamingResponses.forEach(function(res) {
     res.end();
