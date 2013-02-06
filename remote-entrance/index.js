@@ -20,7 +20,7 @@ var hostUrl = 'http://entranceapp.herokuapp.com';
 var gateKeeper = require("./gate-keeperClient.js");
 var db;
 var spotifySession;
-var i = 0;
+var streamingResponses = [];
 
 app.configure(function(){
   app.set('port', process.env.PORT || 3000);
@@ -96,7 +96,7 @@ function handleTap(localEntranceId, deviceId, hollaback) {
               // Let the client know to stop playing
 
               setTracksToStreamingSession(localEntranceId, [], function(err, streamingSession) {
-                spotifySession.getPlayer().stop();
+                stopStreaming();
               });
 
               return hollaback({'action' : 'stop', 'message' : 'Empty session. Stopping Streaming.'});
@@ -117,7 +117,7 @@ function handleTap(localEntranceId, deviceId, hollaback) {
             // console.log("num users in currentStreamingSession:" + currentStreamingSession.users.length);
             // if (currentStreamingSession.users.length > 0) {
               console.log("STOPPING THE PLAYER.")
-              spotifySession.getPlayer().stop();
+              stopStreaming();
             // }
 
             getFacebookFavoriteArtists(user, function (artists) {
@@ -149,11 +149,11 @@ app.get('/:localEntranceId/stream', function (req, res) {
   console.log("request for /stream");
   getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
     // (Hopefully this session has tracks)
-    console.log("found streaming session:" + currentStreamingSession);
+    // console.log("found streaming session:" + currentStreamingSession);
     if (currentStreamingSession && currentStreamingSession.tracks) {
 
       // Grab a random track URL
-      console.log("Beginning to send tracks with streaming session: " + stringify(currentStreamingSession));
+      // console.log("Beginning to send tracks with streaming session: " + stringify(currentStreamingSession));
      return streamTracks(req, res, currentStreamingSession);
       
     } else {
@@ -200,7 +200,7 @@ function fakeStreamTracks (request, response, streamingSession) {
 // var gooone = false;
 function streamTracks(request, response, streamingSession) {
   console.log("stream tracks");
-  
+
   if (streamingSession.tracks.length != 0) {
 
     // Grab a random URL
@@ -209,15 +209,20 @@ function streamTracks(request, response, streamingSession) {
     console.log("Song starting : " + streamingSession.tracks.length + " songs left to play.");
 
     removeTrackFromStreamingSession(request.params.localEntranceId, url, function (err, revisedStreamingSession) {
-      console.log("removed url, now revisedStreamingSession:" + revisedStreamingSession);
+      // console.log("removed url, now revisedStreamingSession:" + revisedStreamingSession);
       // Fetch a track from the URL
+      console.log("new url:" + url);
       var track = sp.Track.getFromUrl(url);
 
       // When the track is ready
       track.on('ready', function() {
+        console.log('track ready.');
 
         // Grab the player
         var player = spotifySession.getPlayer();
+
+        // Stop the player so we can load next track
+        player.stop();
 
         // Load the given track
         player.load(track);
@@ -228,18 +233,19 @@ function streamTracks(request, response, streamingSession) {
         // if (!gooone) {
           // Pipe the result
           player.pipe(response);
+          streamingResponses.push(response);
         // }
 
         // When the player finishes
-        player.once('track-end', function() {
+        // player.once('track-end', function() {
 
-          player.stop();
+        //   player.stop();
 
-          // Log that it's over
-          console.log("Song ended. " + revisedStreamingSession.tracks.length + "songs left to play.");
-          response.end();
-          // streamTracks(request, response, revisedStreamingSession);
-        });
+        //   // Log that it's over
+        //   console.log("Song ended. " + revisedStreamingSession.tracks.length + "songs left to play.");
+        //   response.end();
+        //   // streamTracks(request, response, revisedStreamingSession);
+        // });
       });
     });
   }  
@@ -257,6 +263,18 @@ function streamTracks(request, response, streamingSession) {
     response.end();
   }
 }
+
+// stops the player and ends all responses.
+function stopStreaming() {
+  console.log("Stop streaming for the "  + streamingResponses.length + " streams.");
+  var player = spotifySession.getPlayer();
+  player.stop();
+  streamingResponses.forEach(function(res) {
+    res.end();
+  });
+  streamingResponses = [];
+}
+
 /*
  * Wrapper method for HTTP GETs
  */
@@ -562,6 +580,13 @@ function connectSpotify (appKey, callback) {
   // Once we're logged in, continue with the callback
   spotifySession.once('login', function (err) {
     if (err) return console.error('Error:', err);
+    // Grab the player
+    var player = spotifySession.getPlayer();
+    // when a track ends, stop streaming
+    player.once('track-end', function() {
+      console.log("track ended.");
+      stopStreaming();
+    });
     callback(spotifySession);
   });
 }
@@ -615,17 +640,14 @@ app.get('/testtrackstream', function(req, res) {
     // Grab the player
     var player = spotifySession.getPlayer();
 
+    // stop so we can load track
+    player.stop();
     // Load the given track
     player.load(track);
-
     // Start playing it
     player.play();
-    player.pipe(res);
-    player.once('track-end', function() {
-      player.stop();
-      res.end();
-    });
 
+    player.pipe(res);
   });
   
 });

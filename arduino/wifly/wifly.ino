@@ -4,7 +4,7 @@
 #include <SPI.h>
 #include <WiFly.h>
 
-WiFlyClient client("entranceapp.herokuapp.com", 80);
+WiFlyClient client("jezzpaul.com", 80);
 
 
 void setup() {
