@@ -187,7 +187,7 @@ function fakeStreamTracks (request, response, streamingSession) {
   if (streamingSession.tracks.length == 0) {
       var player = spotifySession.getPlayer();
 
-      var sox = spawn('sox', ['-r', 44100, '-b', 8, '-L', '-c', 2, '-e', 'signed-integer', '-t', 'raw', '-', '-t', 'wav', '-']);
+      var sox = spawn('sox', ['-r', 44100, '-b', 8, '-L', '-c', 2, '-e', 'signed-integer', '-t', 'raw', '-']);
 
       player.pipe(sox.stdin);
 
