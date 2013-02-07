@@ -191,7 +191,9 @@ function fakeStreamTracks (request, response, streamingSession) {
 
       player.pipe(sox.stdin);
 
-      player.pipe(response);
+      sox.stdout.pipe(response);
+
+      // player.pipe(response);
 
       setTimeout(function() { 
         return getCurrentStreamingSession(request.params.localEntranceId, function (error, newCurrentStreamingSession) {
