@@ -13,7 +13,8 @@ var express = require('express')
   , mongoose = require('mongoose')
   , sp = require('libspotify')
   , assert = require('assert')
-  , knox = require('knox');
+  , knox = require('knox')
+  , spawn = require('child_process').spawn;
 
 var app = express();
 var hostUrl = 'http://entranceapp.herokuapp.com';
@@ -185,6 +186,10 @@ function fakeStreamTracks (request, response, streamingSession) {
 
   if (streamingSession.tracks.length == 0) {
       var player = spotifySession.getPlayer();
+
+      var sox = spawn('sox', ['-r', 44100, '-b', 8, '-L', '-c', 2, '-e', 'signed-integer', '-t', 'raw', '-', '-t', 'wav', '-']);
+
+      player.pipe(sox.stdin);
 
       player.pipe(response);
 
