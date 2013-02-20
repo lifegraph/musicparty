@@ -155,7 +155,7 @@ app.get('/:localEntranceId/party', function (req, res) {
 
       // Grab a random track URL
       // console.log("Beginning to send tracks with streaming session: " + stringify(currentStreamingSession));
-     return streamTracks(req, res, currentStreamingSession);
+     res.json(currentStreamingSession);
       
     } else {
 
