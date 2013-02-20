@@ -78,7 +78,7 @@ server.listen(port, function(){
 
           console.log("Server received tap from: " + pID);
 
-          Post the tap to the server
+          // Post the tap to the server
           postTap(deviceUUID, pID, function (err, res) {
 
             console.log("res")
