@@ -75,6 +75,7 @@ app.post('/eimp/tap', function(req, res) {
 // NON-Electric imp endpoint for Entrance taps.
 app.post('/tap', function(req, res) {
   // Parse content.
+  console.log("Request: " + req);
   var deviceId = req.body.deviceUUID;
   var pid = req.body.pID; // assume whole body is the deviceId
   console.log("device with pid: %s and device id: %s", pid, deviceId);
