@@ -1,6 +1,4 @@
+remote-entrance/node_modules
+local-entrance/node_modules
 .DS_Store
-/node_modules
-/local-entrance/.DS_Store
-/local-entrance/node_modules
-/remote-entrance/node_modules
 .env
