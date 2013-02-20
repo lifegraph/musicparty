@@ -42,7 +42,7 @@ function playSong (artist, title, next) {
       console.log('Track timed out, skipping.');
       next();
     }
-  }, 5000);
+  }, 10000);
 
   return state;
 }
