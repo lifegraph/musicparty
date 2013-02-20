@@ -18,7 +18,7 @@ var express = require('express')
 
 var app = express();
 var hostUrl = 'http://entranceapp.herokuapp.com';
-var gateKeeper = require("./gate-keeperClient.js");
+var gateKeeper = require("./lifegraph.js");
 var db;
 var spotifySession;
 var streamingResponses = [];
@@ -66,7 +66,7 @@ app.get('/:localEntranceId/:deviceId/tap', function (req, res) {
 });
 
 function handleTap(localEntranceId, deviceId, hollaback) {
-  gateKeeper.requestUser(deviceId, function (error, user) {
+  gateKeeper.requestUser(localEntranceId, function (error, user) {
     // If we have an error, then there was a problem with the HTTP call
     // or the user isn't in the db and they need to sync
     if (error) {

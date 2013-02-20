@@ -3,6 +3,8 @@ var trackRecord = require("./trackrecord/trackrecord");
 var spawn = require('child_process').spawn;
 var SerialPort = serialport.SerialPort;
 var http = require('http');
+
+
 // var arduino_port = "/dev/tty.usbmodem1411";
 var arduino_port = "/dev/cu.usbmodemfa131";
 // var serialPort = new SerialPort(arduino_port, { 
