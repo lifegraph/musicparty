@@ -1,10 +1,12 @@
 var mongoose = require('mongoose');
 
 var StreamingSessionSchema = mongoose.Schema({
-  localEntranceId: String,
+  deviceId: String,
   streamingUsers: Array,
   tracks: Array
-}, { collection: 'streaming_users_db' });
+}, {
+  collection: 'streaming_users_db'
+});
 
 var StreamingSession = mongoose.model('StreamingSession', StreamingSessionSchema);
 
