@@ -146,6 +146,25 @@ function handleTap(localEntranceId, deviceId, hollaback) {
   });
 }
 
+app.get('/:localEntranceId/party', function (req, res) {
+  console.log("request for /party");
+  getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
+    // (Hopefully this session has tracks)
+    // console.log("found streaming session:" + currentStreamingSession);
+    if (currentStreamingSession && currentStreamingSession.tracks) {
+
+      // Grab a random track URL
+      // console.log("Beginning to send tracks with streaming session: " + stringify(currentStreamingSession));
+     return streamTracks(req, res, currentStreamingSession);
+      
+    } else {
+
+      // Something weird happened if there aren't any tracks
+      res.send("Shit. There are no tracks.");
+    }
+  });
+});
+
 app.get('/:localEntranceId/stream', function (req, res) {
   console.log("request for /stream");
   getCurrentStreamingSession(req.params.localEntranceId, function (error, currentStreamingSession) {
@@ -155,7 +174,7 @@ app.get('/:localEntranceId/stream', function (req, res) {
 
       // Grab a random track URL
       // console.log("Beginning to send tracks with streaming session: " + stringify(currentStreamingSession));
-     return streamTracks(req, res, currentStreamingSession);
+      return streamTracks(req, res, currentStreamingSession);
       
     } else {
 
