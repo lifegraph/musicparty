@@ -22,7 +22,7 @@ var express = require('express')
  */
 
 var app = express();
-var hostUrl = 'http://entranceapp.herokuapp.com';
+var hostUrl = 'http://entrance-tutorial.herokuapp.com';
 var db;
 
 app.configure(function(){
@@ -61,13 +61,24 @@ app.get('/', function (req, res){
 });
 
 // Electric imp endpoint for Entrance taps.
-
 app.post('/eimp/tap', function(req, res) {
   // Parse content.
   var deviceId = req.body.target;
   var pid = req.body.value; // assume whole body is the deviceId
   deviceId = deviceId.replace(/\u0010/g, ''); // don't know why this is here
   console.log("eimp with pid: %s and device id: %s", pid, deviceId);
+  handleTap(deviceId, pid, function (json) {
+    res.json(json);
+  });
+});
+
+// NON-Electric imp endpoint for Entrance taps.
+app.post('/tap', function(req, res) {
+  // Parse content.
+  console.log("Request: " + req);
+  var deviceId = req.body.deviceUUID;
+  var pid = req.body.pID; // assume whole body is the deviceId
+  console.log("device with pid: %s and device id: %s", pid, deviceId);
   handleTap(deviceId, pid, function (json) {
     res.json(json);
   });
