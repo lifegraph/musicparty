@@ -115,7 +115,7 @@ function handleTap (deviceId, pid, hollaback) {
     // or the user isn't in the db and they need to sync
     if (error) {
       console.log("We had an error with lifegraph:", error);
-      return hollaback({'error': "Physical ID has not been bound to an account. Go to http://connect.lifegraph.com/, Connect with Entrance Tutorial, and tap again."});
+      return hollaback({'error': "Physical ID has not been bound to an account. Go to http://connect.lifegraphlabs.com/, Connect with Entrance Tutorial, and tap again."});
     } 
 
     // Grab those who are already in the room 
