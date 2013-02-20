@@ -144,7 +144,7 @@ function handleTap (deviceId, pid, hollaback) {
 
             } else {
               // User left room, but people are still in room
-              return hollaback({'action' : 'User Tagged Out of Room', 'message' : 'User removed from session. Reforming track list on server.', 'cmd' : 0});
+              return hollaback({'action' : 'User Tagged Out of Room', 'message' : 'Reforming track list on server for remeaning streaming users.', 'cmd' : 0});
             }
           });
         } 
