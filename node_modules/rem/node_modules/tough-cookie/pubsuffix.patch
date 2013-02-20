@@ -1,0 +1,21 @@
+diff --git a/lib/cookie.js b/lib/cookie.js
+index 07cbeeb..af041c0 100644
+--- a/lib/cookie.js
++++ b/lib/cookie.js
+@@ -709,11 +709,15 @@ CookieJar.prototype.setCookie = function setCookie(cookie, url, options, cb) {
+   if (this.rejectPublicSuffixes && cookie.domain) {
+     var suffix = pubsuffix.getPublicSuffix(cookie.cdomain());
+     if (suffix == null) // e.g. "com"
+-      return cb(new Error("Cookie has domain set to a public suffix"));
++      if (cookie.cdomain() == host)
++        cookie.domain = null;
++      else
++        return cb(new Error("Cookie has domain set to a public suffix"));
+   }
+ 
+   // S5.3 step 6:
+   if (cookie.domain) {
++    console.log("CMP",host,cookie.cdomain());
+     if (!domainMatch(host, cookie.cdomain(), false))
+       return cb(new Error("Cookie not in this host's domain"));
+     else
