@@ -103,11 +103,8 @@ function handleTap (deviceId, pid, hollaback) {
     // If we have an error, then there was a problem with the HTTP call
     // or the user isn't in the db and they need to sync
     if (error) {
-      console.log("We had an error with lifegraph: " + error.message);
-      
-      return hollaback({'error': "We had an error with lifegraph: " + error.message});
-      // Send something to the local entrance device to let it know if
-      // a.) there was a network error or b.) the device needs to sync
+      console.log("We had an error with lifegraph:", error);
+      return hollaback({'error': "Physical ID has not been bound to an account. Go to http://connect.lifegraph.com/, Connect with Entrance Tutorial, and tap again."});
     } 
 
     // Grab those who are already in the room 
