@@ -75,9 +75,8 @@ app.post('/eimp/tap', function(req, res) {
 // NON-Electric imp endpoint for Entrance taps.
 app.post('/tap', function(req, res) {
   // Parse content.
-  var deviceId = req.body.target;
-  var pid = req.body.value; // assume whole body is the deviceId
-  deviceId = deviceId.replace(/\u0010/g, ''); // don't know why this is here
+  var deviceId = req.body.deviceUUID;
+  var pid = req.body.pID; // assume whole body is the deviceId
   console.log("device with pid: %s and device id: %s", pid, deviceId);
   handleTap(deviceId, pid, function (json) {
     res.json(json);
