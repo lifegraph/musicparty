@@ -75,7 +75,6 @@ app.post('/eimp/tap', function(req, res) {
 // NON-Electric imp endpoint for Entrance taps.
 app.post('/tap', function(req, res) {
   // Parse content.
-  console.log("Request: " + req);
   var deviceId = req.body.deviceUUID;
   var pid = req.body.pID; // assume whole body is the deviceId
   console.log("device with pid: %s and device id: %s", pid, deviceId);
@@ -144,11 +143,11 @@ function handleTap (deviceId, pid, hollaback) {
                 
               });
 
-              return hollaback({'action' : 'stop', 'message' : 'Empty session. Stopping Streaming.'});
+              return hollaback({'action' : 'User Tagged Out of Room', 'message' : 'Empty session. Stopping Streaming After Song Ends.', 'cmd' : 0});
 
             } else {
               // User left room, but people are still in room
-              return hollaback({'action' : 'continue', 'message' : 'User removed from session. Reforming track list on server.'});
+              return hollaback({'action' : 'User Tagged Out of Room', 'message' : 'User removed from session. Reforming track list on server.', 'cmd' : 0});
             }
           });
         } 
@@ -178,7 +177,7 @@ function handleTap (deviceId, pid, hollaback) {
 
                     return hollaback({'error': err.message});
                   }
-                    return hollaback({'action': 'play', 'message': 'User added to session. Reforming track list on server.'});
+                    return hollaback({'action': 'User Added To Streaming Session', 'message': 'Opening Browser', 'cmd' : '1'});
                 });
               });
             });  
