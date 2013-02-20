@@ -17,6 +17,11 @@ var express = require('express')
   , rem = require('rem')
   , async = require('async');
 
+  // App key and secret (these are git ignored)
+  var key = require('./config.json').fbapp_key;
+  var secret = require('./config.json').fbapp_secret;
+  var namespace = 'entrance-tutorial';
+
 /**
  * Configure application
  */
@@ -50,7 +55,7 @@ app.configure('development', function(){
  * Configure Lifegraph.
  */
 
-lifegraph.configure('entrance-tutorial', "481848201872129", "f2696ba2416ae6a4cc9cbde1dddd6a5b");
+lifegraph.configure(namespace, key, secret);
 
 /**
  * Routes
@@ -60,18 +65,6 @@ app.get('/', function (req, res){
   res.render('index');
 });
 
-// Electric imp endpoint for Entrance taps.
-app.post('/eimp/tap', function(req, res) {
-  // Parse content.
-  var deviceId = req.body.target;
-  var pid = req.body.value; // assume whole body is the deviceId
-  deviceId = deviceId.replace(/\u0010/g, ''); // don't know why this is here
-  console.log("eimp with pid: %s and device id: %s", pid, deviceId);
-  handleTap(deviceId, pid, function (json) {
-    res.json(json);
-  });
-});
-
 // NON-Electric imp endpoint for Entrance taps.
 app.post('/tap', function(req, res) {
   // Parse content.
@@ -79,12 +72,6 @@ app.post('/tap', function(req, res) {
   var pid = req.body.pID; // assume whole body is the deviceId
   console.log("device with pid: %s and device id: %s", pid, deviceId);
   handleTap(deviceId, pid, function (json) {
-    res.json(json);
-  });
-});
-
-app.get('/:deviceId/:pid/tap', function (req, res) {
-  handleTap(req.params.deviceId, req.params.pid, function(json) {
     res.json(json);
   });
 });
