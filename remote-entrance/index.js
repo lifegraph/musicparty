@@ -18,8 +18,8 @@ var express = require('express')
   , async = require('async');
 
   // App key and secret (these are git ignored)
-  var key = require('./config.json').fbapp_key;
-  var secret = require('./config.json').fbapp_secret;
+  var key = process.env.FBKEY || require('./config.json').fbapp_key;
+  var secret = process.env.FBSECRET || require('./config.json').fbapp_secret;
   var namespace = 'entrance-tutorial';
 
 /**
