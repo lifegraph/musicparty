@@ -71,12 +71,12 @@ Detecting RFID
 
 Now that we can play music, we’ll need to detect which person is tagging in so that we can play music that they like.
 
-Connect your Arduino to your computer with a USB cable. If you haven’t already, you’ll need to download the Arduino developing environment. We’ve decided to use Adafruit’s NFC/RFID shield because it’s well documented, easy to use, and they provide a library to get you started. You’ll need to download the library from here and store it in the Libraries folder of your Arduino (on OSX, the new directory would be ~/Documents/Arduino/libraries/ and on Windows, it would be My Documents\Arduino\libraries\). If you already had the Arduino environment open before placing the code in the Libraries folder, restart it now.
+Connect your Arduino to your computer with a USB cable. If you haven’t already, you’ll need to download the Arduino developing environment. We’ve decided to use [Adafruit’s NFC/RFID shield](http://www.adafruit.com/products/363) because it’s well documented, easy to use, and they provide a library to get you started. You’ll need to download the library from here and store it in the Libraries folder of your Arduino (on OSX, the new directory would be ~/Documents/Arduino/libraries/ and on Windows, it would be My Documents\Arduino\libraries\). If you already had the Arduino environment open before placing the code in the Libraries folder, restart it now.
 
 
 Place the RFID Shield on top of the Arduino. Go to File->Examples->AdaFruit_NFCShield_I2C->ReadMifare and upload it to the Arduino by clicking the right-facing arrow on the sketch that opens up. Once it finishes uploading, open your serial terminal by clicking Tools->Serial Monitor.  Make sure that you’re listening with 9600 baud. It should say that it’s waiting for an ISO14443A Card. Tap your RFID card against the reader and it should print out the UUID of the card!
 
-Now we’re going to send the UUID from the rfid tag to our node server. Our first step is to make sure we only send one UUID over once every two seconds, or else we’ll just inundate our server with useless information.  Create a new Arduino sketch by selecting the Arduino application and clicking the dog-eared paper icon. Title the file ‘rfid_arduino.ino’ and paste the following, slightly modified, Arduino code:
+Now we’re going to send the UUID from the rfid tag to our node server. Our first step is to make sure we only send one UUID over once every two seconds, or else we’ll just inundate our server with useless information.  Create a new Arduino sketch by selecting the Arduino application and clicking the dog-eared paper icon. Title the file ‘arduino_rfid_reader.ino’ and paste the following, slightly modified, Arduino code:
 
 ```
 #include <Wire.h>
@@ -367,7 +367,7 @@ If you run this new server file, it should say that it printed a new UUID. If yo
 Syncing With the Server
 -----------------------
 
-The last thing we need before receiving music from the server is to sync our RFID tag with our Facebook ID. The team at Lifegraph Labs has created a website and an API called Lifegraph Connect to let you easily sync a physical identity (your RFID tag) with a virtual identity (your Facebook ID) that we’ll take advantage of for this tutorial. If you would like to know more about how to make a backend API yourself, let us know and we’ll update the tutorial!
+The last thing we need before receiving music from the server is to sync our RFID tag with our Facebook ID. The team at [Lifegraph Labs](http://lifegraphlabs.com) has created a website and an API called [Lifegraph Connect](http://connect.lifegraphlabs.com/) to let you easily sync a physical identity (your RFID tag) with a virtual identity (your Facebook ID) that we’ll take advantage of for this tutorial. If you would like to know more about how to make a backend API yourself, let us know and we’ll update the tutorial!
 
 We need to add some code to our node server that will let Lifegraph Connect know that we received a tap from our RFID tag. Our server will then tell us if the RFID tag is synced to a Facebook account. We are going to use the REM node module to send information because it wraps a lot of tedious code into a simple API and makes it easy to parse the response. Replace the contents of ‘app.js’ with the following code:
 
@@ -538,11 +538,11 @@ function getDeviceUUID(callback) {
 }
 ```
 
-If you run that code and tap your RFID tag, you should get an error because your personal device (RFID tag) isn’t synced to a Facebook account. In your web browser, go to the Lifegraph Connect website. Click the ‘connect’ button and sign in with your Facebook account. After you've signed in to your Facebook account, tap your RFID device and click the button that pops up to sync your personal device.
+If you run that code and tap your RFID tag, you should get an error because your personal device (RFID tag) isn’t synced to a Facebook account. In your web browser, go to the [Lifegraph Connect](http://connect.lifegraphlabs.com/) website. Click the ‘connect’ button and sign in with your Facebook account. After you've signed in to your Facebook account, tap your RFID device and click the button that pops up to sync your personal device.
 
 Great, now we’re ready to start streaming music. The entrance tutorial server, which we passed the tag information to, will keep track of which songs would be most suitable for the users currently listening to it. After we tag in, it will generate JSON with the music information and if we open our Internet browser to http://entrance-tutorial.herokuapp.com/deviceID/party, it will start playing the music.
 
-We can now use a really cool API called Tomahawk, which will automatically check many different sources such as SoundCloud, YouTube, Spotify, etc. for a song. When you hit the “party” URL mentioned above, the Tomahawk API will search for each song in the JSON array we provide it and play it when found. Now we just need the code that will automatically open the browser. Paste the following code into your ‘app.js’ file, restart your server, tap your device, and enjoy your music. ☺
+We can now use a really cool API called [Tomahawk](http://blog.tomahawk-player.org/post/41518909327/toma-hk-api-making-music-hacks-easier-since-2013), which will automatically check many different sources such as SoundCloud, YouTube, Spotify, etc. for a song. When you hit the “party” URL mentioned above, the Tomahawk API will search for each song in the JSON array we provide it and play it when found. The remote entrance back end will take care of all of this for us! Now we just need the code that will automatically open the browser. Paste the following code into your ‘app.js’ file, restart your server, tap your device, and enjoy your music. ☺
 
 ```
 // Include the http module
