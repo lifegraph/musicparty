@@ -1,4 +1,4 @@
-function playSong (artist, title, next) {
+function playSong (artist, title, uri, next) {
   var state = {
     playable: false
   };
@@ -19,6 +19,9 @@ function playSong (artist, title, next) {
       onplayable: function() {
         state.playable = true;
         track.play();
+        $.post('../listen', {
+          track: uri,
+        });
         console.log(track.connection+":\n  playable");
       },
       onresolved: function(resolver, result) {
@@ -62,7 +65,7 @@ $(function () {
       }
 
       var track = tracks.shift();
-      state = playSong(track.artist, track.track, nextTrack);
+      state = playSong(track.artist, track.track, track.url, nextTrack);
     }
 
     nextTrack();
