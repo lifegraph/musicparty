@@ -1,9 +1,11 @@
-EnTrance Tutorial
+Entrance Tutorial
 =========
 
 What it is
 ----------
-Entrance is a device that passively streams your favorite music with the tap of an RFID-enabled device. It links the unique ID of your RFID device (like [Charlie Cards](http://www.mbta.com/fares_and_passes/charlie/) and [Clipper Cards](https://www.clippercard.com/ClipperWeb/index.do)) to the Facebook ID of the user, which gives it the ability to find a user’s favorite artists from Facebook and stream it through [Tomahawk](http://blog.tomahawk-player.org/post/41518909327/toma-hk-api-making-music-hacks-easier-since-2013). 
+Entrance is a device that passively streams your favorite music with the tap of an RFID-enabled device. It links the unique ID of your RFID device (like [Charlie Cards](http://www.mbta.com/fares_and_passes/charlie/) and [Clipper Cards](https://www.clippercard.com/ClipperWeb/index.do)) to the Facebook ID of the user, which gives it the ability to find a user’s favorite artists from Facebook and stream them through [Tomahawk](http://blog.tomahawk-player.org/post/41518909327/toma-hk-api-making-music-hacks-easier-since-2013). 
+
+All the final code for the project can be found in the local-entrance directory of this repository. We've also included the remote-entrance repository in case you want to glimpse at the back end or make your own.
 
 
 What you'll learn
@@ -22,19 +24,23 @@ What you’ll need
 **One more Note:** We’ll guide you through how to do this with the Adafruit RFID Shield but you can easily modify it to be able to work with a different RFID solution if you already own one. 
 	
 
-SERVER SET UP
-We’re going to start by setting up our server using Node JS. Node JS is a really quick and easy framework for creating web servers. You can find installation instructions here. If you’re on a Windows machine, you may need to restart your computer after installation (even if it doesn’t tell you that you need to). 
+Setting up the Node Server
+-------------
+We’re going to start by setting up our server using Node JS. Node JS is a really quick and easy framework for creating web servers. You can find installation instructions [here](http://nodejs.org/). If you’re on a Windows machine, you may need to restart your computer after installation (even if it doesn’t tell you that you need to). 
 
 Great, now we’re ready to start coding. We'll be using the terminal to complete these tasks and for a few similar tasks in the future. On Windows, this can be accessed by hitting the windows key, typing 'cmd', and then pressing enter. On OSX, just open the Terminal application. Run the following commands in the terminal.
 
+```
 mkdir entrance-tutorial
 cd entrance-tutorial
 npm install serialport fs node-uuid rem
+```
 
 This creates a project directory for us and tells Node Package Manager (AKA npm) to install four node modules (packages of code): serialPort for communicating with Arduino, fs which gives us control of our file system, REM for making easy network calls, and node-uuid, which will allow us to create a unique id for our Entrance device so that the server can keep track of which users are listening to which Entrance. 
 
-Now we can start creating our server. In your editor of choice (<3 Sublime Text) create a file called “app.js", enter in the code below and save it in our project directory. What we're doing in this chunk is simply importing the code from the module we need to run a web app ('http'), telling the server to listen on port 5000, and sending the same response (“Sweet it seems to be working.”) to every client that tries to connect.
+Now we can start creating our server. In your editor of choice ([<3 Sublime Text](http://www.sublimetext.com/)) create a file called “app.js", enter in the code below and save it in our project directory. What we're doing in this chunk is simply importing the code from the module we need to run a web app ('http'), telling the server to listen on port 5000, and sending the same response (“Sweet it seems to be working.”) to every client that tries to connect.
 
+```
 // Include the http module
 var http = require('http');
 
@@ -51,14 +57,17 @@ server.listen(port, function(){
 	console.log("Express server listening on port " + port);
 
 });
+```
 
 Now, that we have the code for the server written, we should start running our server. In your terminal window, type ‘node app.js’ to start the terminal (later, when you want to stop it, type control + c”). 
 
-Note: If you receive an error like 'Error: listen EADDRINUSE' when trying to run the server, you may need to change the active port. To do that, change line 12 of ‘app.js' to app.set(‘port’, X); where X is some number between 3000 and 9000 but not 5000.
+***Note:*** If you receive an error like 'Error: listen EADDRINUSE' when trying to run the server, you may need to change the active port. To do that, change line 12 of ‘app.js' to app.set(‘port’, X); where X is some number between 3000 and 9000 but not 5000.
 
 With your web browser, go to ‘http://localhost:5000’ (or, if you had to change your port, enter that number after the colon). You should see the message that tells you it’s working!
 
+
 Detecting RFID
+--------------
 
 Now that we can play music, we’ll need to detect which person is tagging in so that we can play music that they like.
 
@@ -69,6 +78,7 @@ Place the RFID Shield on top of the Arduino. Go to File->Examples->AdaFruit_NFCS
 
 Now we’re going to send the UUID from the rfid tag to our node server. Our first step is to make sure we only send one UUID over once every two seconds, or else we’ll just inundate our server with useless information.  Create a new Arduino sketch by selecting the Arduino application and clicking the dog-eared paper icon. Title the file ‘rfid_arduino.ino’ and paste the following, slightly modified, Arduino code:
 
+```
 #include <Wire.h>
 #include <Adafruit_NFCShield_I2C.h>
 
@@ -145,9 +155,11 @@ void printHexPlain(const byte * data, const uint32_t numBytes)
   }
   Serial.println("");
 }
+```
 
 Upload the code to your Arduino again and verify that it can still successfully print out the UUID of your tag but it doesn’t print it again within two seconds. Now we need to modify the server code so that it can read in the Serial data. We’re going to open up a serial port to the Arduino and write out whatever UUID we get over. Replace the contents of your ‘app.js’ file with the code below; the only thing you’ll need to change is the serial port of your Arduino, which is the 8th line of code. You can find it by going to Tools->Serial Port in the Arduino application. 
 
+```
 // Include the http module
 var http = require('http');
 
@@ -348,14 +360,18 @@ function getDeviceUUID(callback) {
     }
  });
 }
+```
 
 If you run this new server file, it should say that it printed a new UUID. If you then stop it and run it again, it should let you know that it read an existing UUID from the file. Great!
 
 Syncing With the Server
-The last thing we need before receiving music from the server is to sync our RFID tag with our Facebook ID. My team at Lifegraph Labs has created a website and an API called Lifegraph Connect to let you easily sync a physical identity (your RFID tag) with a virtual identity (your Facebook ID) that we’ll take advantage of for this tutorial. If you would like to know more about how to make a backend API yourself, let us know and we’ll update the tutorial!
+-----------------------
+
+The last thing we need before receiving music from the server is to sync our RFID tag with our Facebook ID. The team at Lifegraph Labs has created a website and an API called Lifegraph Connect to let you easily sync a physical identity (your RFID tag) with a virtual identity (your Facebook ID) that we’ll take advantage of for this tutorial. If you would like to know more about how to make a backend API yourself, let us know and we’ll update the tutorial!
 
 We need to add some code to our node server that will let Lifegraph Connect know that we received a tap from our RFID tag. Our server will then tell us if the RFID tag is synced to a Facebook account. We are going to use the REM node module to send information because it wraps a lot of tedious code into a simple API and makes it easy to parse the response. Replace the contents of ‘app.js’ with the following code:
 
+```
 // Include the http module
 var http = require('http');
 
@@ -520,14 +536,15 @@ function getDeviceUUID(callback) {
     }
  });
 }
+```
 
-
-If you run that code and tap your RFID tag, you should get an error because your personal device (RFID tag) isn’t synced to a Facebook account. In your web browser, go to the Lifegraph Connect website. Click the ‘connect’ button and sign in with your Facebook account. Then click the link to sync your personal device.
+If you run that code and tap your RFID tag, you should get an error because your personal device (RFID tag) isn’t synced to a Facebook account. In your web browser, go to the Lifegraph Connect website. Click the ‘connect’ button and sign in with your Facebook account. After you've signed in to your Facebook account, tap your RFID device and click the button that pops up to sync your personal device.
 
 Great, now we’re ready to start streaming music. The entrance tutorial server, which we passed the tag information to, will keep track of which songs would be most suitable for the users currently listening to it. After we tag in, it will generate JSON with the music information and if we open our Internet browser to http://entrance-tutorial.herokuapp.com/deviceID/party, it will start playing the music.
 
 We can now use a really cool API called Tomahawk, which will automatically check many different sources such as SoundCloud, YouTube, Spotify, etc. for a song. When you hit the “party” URL mentioned above, the Tomahawk API will search for each song in the JSON array we provide it and play it when found. Now we just need the code that will automatically open the browser. Paste the following code into your ‘app.js’ file, restart your server, tap your device, and enjoy your music. ☺
 
+```
 // Include the http module
 var http = require('http');
 
@@ -719,6 +736,7 @@ function getCorrectBrowserCommand() {
     return 'xdg-open';
   }
 }
+```
 
 
 
