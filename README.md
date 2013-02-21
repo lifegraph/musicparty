@@ -18,12 +18,13 @@ What you’ll need
 * An Internet Connection
 * [An Arduino](https://www.sparkfun.com/products/11021)
 * [Adafruit NFC/RFID Reader Shield](http://www.adafruit.com/products/789) (& [Header Pins](https://www.adafruit.com/products/85) to connect to the Arduino)
-* [An RFID Tag](http://www.adafruit.com/products/363)(Any 125kHz RFID card will work)
+* [An RFID Tag](http://www.adafruit.com/products/363) (Any 125kHz RFID card will work)
 * A Facebook account (that has ‘liked’ bands/music)
 
 **One more Note:** We’ll guide you through how to do this with the Adafruit RFID Shield but you can easily modify it to be able to work with a different RFID solution if you already own one. 
-	
 
+Let's get started!
+	
 Setting up the Node Server
 -------------
 We’re going to start by setting up our server using Node JS. Node JS is a really quick and easy framework for creating web servers. You can find installation instructions [here](http://nodejs.org/). If you’re on a Windows machine, you may need to restart your computer after installation (even if it doesn’t tell you that you need to). 
