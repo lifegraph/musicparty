@@ -14,12 +14,12 @@ You'll learn how to read RFID cards, communicate between an Arduino and a local 
 
 What you’ll need
 ----------------
-*A Computer
-*An Internet Connection
-*[An Arduino](https://www.sparkfun.com/products/11021)
-*[Adafruit NFC/RFID Reader Shield](http://www.adafruit.com/products/789) (& [Header Pins](https://www.adafruit.com/products/85) to connect to the Arduino)
-*[An RFID Tag](http://www.adafruit.com/products/363)(Any 125kHz RFID card will work)
-*A Facebook account (that has ‘liked’ bands/music)
+* A Computer
+* An Internet Connection
+* [An Arduino](https://www.sparkfun.com/products/11021)
+* [Adafruit NFC/RFID Reader Shield](http://www.adafruit.com/products/789) (& [Header Pins](https://www.adafruit.com/products/85) to connect to the Arduino)
+* [An RFID Tag](http://www.adafruit.com/products/363)(Any 125kHz RFID card will work)
+* A Facebook account (that has ‘liked’ bands/music)
 
 **One more Note:** We’ll guide you through how to do this with the Adafruit RFID Shield but you can easily modify it to be able to work with a different RFID solution if you already own one. 
 	
