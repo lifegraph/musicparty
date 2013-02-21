@@ -76,6 +76,54 @@ app.post('/tap', function(req, res) {
   });
 });
 
+app.get('/tracks/:id', function (req, res) {
+  rem.json('http://ws.spotify.com/lookup/1/.json', {
+    uri: req.params.id
+  }).get(function (err, json) {
+    if (!json) {
+      return res.send('No such song.', 404);
+    }
+
+    res.write('<head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# music: http://ogp.me/ns/music#">');
+    res.write('<meta property="fb:app_id"       content="' + key + '" />');
+    res.write('<meta property="og:type"         content="music.song" />');
+    //res.write('<meta property="og:url"          content="Put your own URL to the object here" />');
+    res.write('<meta property="og:title"        content="' + (json.track && json.track.name) + ' &mdash; ' + ((json.track.artists || [])[0] || {}).name + '" />');
+    res.write('<meta property="og:image"        content="https://s-static.ak.fbcdn.net/images/devsite/attachment_blank.png" /> ');
+    //res.write('<meta property="music:album:url" content="Sample Album: URL" />');
+    res.end('Done.');
+  });
+})
+
+app.get('/:deviceId/listen', function (req, res) {
+  if (!req.body.track) {
+    return res.json({error: true, message: 'Invalid track.'}, 400);
+  }
+
+  var fb = rem.connect('facebook.com', '*').configure({
+    key: key,
+    secret: secret
+  });
+  var oauth = rem.oauth(fb);
+  
+  getCurrentStreamingSession(req.params.deviceId, function (err, sess) {
+    if (err || !sess) {
+      return res.json({error: true, message: 'No listening session.'}, 500);
+    }
+
+    sess.streamingUsers.forEach(function (tokens) {
+      var user = oauth.restore(tokens.tokens);
+      user('me/entrance-tutorial:enter_to').post({
+        song: 'http://entranceapp.herokuapp.com/tracks/' + req.body.track
+      }, function (err, json) {
+        console.log('Posted song to Open Graph', err, json);
+      })
+    })
+
+    res.json({error: false, message: 'Posting to the Open Graph.'});
+  })
+});
+
 app.get('/:deviceId/party/json', function (req, res) {
   console.log("request for /party");
   getCurrentStreamingSession(req.params.deviceId, function (error, currentStreamingSession) {
@@ -205,6 +253,16 @@ function getFacebookFavoriteArtists (facebookUser, callback) {
  * Gets the songs associated with each artist in the array artists.
  */
 
+function getDistinctArray (arr, dohash) {
+  var dups = {};
+  return arr.filter(function(el) {
+    var hash = dohash(el);
+    var isDup = dups[hash];
+    dups[hash] = true;
+    return !isDup;
+  });
+}
+
 function getTracksFromArtists (artists, callback) {
   if (!artists.length) {
     console.log("There are no artists.");
@@ -212,10 +270,12 @@ function getTracksFromArtists (artists, callback) {
   }
 
   // Search tracks by each artist.
-  async.map(artists.slice(0, 10), function (artist, next) {
+  shuffle(artists);
+  async.map(artists.slice(0, 20), function (artist, next) {
     rem.json('http://ws.spotify.com/search/1/track.json').get({
       q: artist
     }, function (err, json) {
+      console.log(artist);
       next(null, json.tracks.filter(function (track) {
         return parseFloat(track.popularity) > 0.4;
       }).map(function (track) {
@@ -230,6 +290,13 @@ function getTracksFromArtists (artists, callback) {
   }, function (err, tracks) {
     tracks = Array.prototype.concat.apply([], tracks);
     shuffle(tracks);
+    tracks.sort(function (a, b) {
+      var popa = ((a.popularity*10)|0), popb = ((b.popularity*10)|0);
+      return popa > popb ? -1 : popa < popb ? 1 : 0;
+    });
+    tracks = getDistinctArray(tracks, function (el) {
+      return String(el.artist) + ' ::: ' + String(el.track);
+    });
     callback(tracks);
   });
 }
