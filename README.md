@@ -63,7 +63,7 @@ Now, that we have the code for the server written, we should start running our s
 
 ***Note:*** If you receive an error like 'Error: listen EADDRINUSE' when trying to run the server, you may need to change the active port. To do that, change line 12 of ‘app.js' to app.set(‘port’, X); where X is some number between 3000 and 9000 but not 5000.
 
-With your web browser, go to ‘http://localhost:5000’ (or, if you had to change your port, enter that number after the colon). You should see the message that tells you it’s working!
+With your web browser, go to ‘[http://localhost:5000](http://localhost:5000)’ (or, if you had to change your port, enter that number after the colon). You should see the message that tells you it’s working!
 
 
 Detecting RFID
