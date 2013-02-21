@@ -95,7 +95,7 @@ app.get('/tracks/:id', function (req, res) {
   });
 })
 
-app.get('/:deviceId/listen', function (req, res) {
+app.post('/:deviceId/listen', function (req, res) {
   if (!req.body.track) {
     return res.json({error: true, message: 'Invalid track.'}, 400);
   }
@@ -113,6 +113,7 @@ app.get('/:deviceId/listen', function (req, res) {
 
     sess.streamingUsers.forEach(function (tokens) {
       var user = oauth.restore(tokens.tokens);
+      console.log('User:', tokens.id);
       user('me/entrance-tutorial:enter_to').post({
         song: 'http://entranceapp.herokuapp.com/tracks/' + req.body.track
       }, function (err, json) {
@@ -120,6 +121,7 @@ app.get('/:deviceId/listen', function (req, res) {
       })
     })
 
+    console.log('Posting to the Open Graph');
     res.json({error: false, message: 'Posting to the Open Graph.'});
   })
 });
