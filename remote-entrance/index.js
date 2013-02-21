@@ -115,7 +115,7 @@ app.post('/:deviceId/listen', function (req, res) {
       var user = oauth.restore(tokens.tokens);
       console.log('User:', tokens.id);
       user('me/entrance-tutorial:enter_to').post({
-        song: 'http://entranceapp.herokuapp.com/tracks/' + req.body.track
+        song: 'http://entrance-tutorial.herokuapp.com/tracks/' + req.body.track
       }, function (err, json) {
         console.log('Posted song to Open Graph', err, json);
       })
