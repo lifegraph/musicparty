@@ -1,19 +1,25 @@
 EnTrance Tutorial
 =========
 
-Introduction
-Entrance is a device that passively streams your favorite music with the tap of an RFID-enabled device. It links the unique ID of the RFID to the Facebook ID of the user, which gives it the ability to find a user’s favorite artists from Facebook. It then streams that music over Bluetooth (to a Jambox). 
+What it is
+----------
+Entrance is a device that passively streams your favorite music with the tap of an RFID-enabled device. It links the unique ID of your RFID device (like [Charlie Cards](http://www.mbta.com/fares_and_passes/charlie/) and [Clipper Cards](https://www.clippercard.com/ClipperWeb/index.do)) to the Facebook ID of the user, which gives it the ability to find a user’s favorite artists from Facebook and stream it through [Tomahawk](http://blog.tomahawk-player.org/post/41518909327/toma-hk-api-making-music-hacks-easier-since-2013). 
 
 
-What you’ll need:
-Computer
-Internet Connection
-Arduino
-Adafruit NFC/RFID Reader Shield (& Header Pins)
-RFID Tag
-A Facebook account (that has ‘liked’ bands/music)
+What you'll learn
+-----------------
+You'll learn how to read RFID cards, communicate between an Arduino and a local Node server, and how to interface with [Lifegraph Connect](http://connect.lifegraphlabs.com/) for authentication and device ID storage.
 
-Another note: We’ll guide you through how to do this with the Adafruit RFID Shield but you can easily modify it to be able to work with a different RFID solution if you already own one. 
+What you’ll need
+----------------
+*A Computer
+*An Internet Connection
+*[An Arduino](https://www.sparkfun.com/products/11021)
+*[Adafruit NFC/RFID Reader Shield](http://www.adafruit.com/products/789) (& [Header Pins](https://www.adafruit.com/products/85) to connect to the Arduino)
+*[An RFID Tag](http://www.adafruit.com/products/363)(Any 125kHz RFID card will work)
+*A Facebook account (that has ‘liked’ bands/music)
+
+**One more Note:** We’ll guide you through how to do this with the Adafruit RFID Shield but you can easily modify it to be able to work with a different RFID solution if you already own one. 
 	
 
 SERVER SET UP
