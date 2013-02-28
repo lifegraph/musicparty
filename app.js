@@ -17,7 +17,7 @@ var spawn = require('child_process').spawn;
 var uuidGenerator = require('node-uuid');
 
 // Port to listen to requests on
-var port = 5000;
+var port = 6000;
 
 // Include the serial port module for comm with Arduino
 var serialport = require("serialport");
@@ -30,6 +30,10 @@ var serialPort;
 
 // Set the Arduino port (make sure this is right!)
 var arduino_port = "/dev/tty.usbmodemfd121";
+
+// var host = "http://localhost:5000";
+
+var host = "entrance-tutorial.herokuapp.com";
 
 
 
@@ -95,8 +99,8 @@ server.listen(port, function(){
                 browserCommand = getCorrectBrowserCommand();
 
                 // Open it
-                spawn(browserCommand, ['http://entrance-tutorial.herokuapp.com/' + deviceUUID + "/party/"]);
-                console.log("Opening the browser to play music.");
+                // spawn(browserCommand, [host + '/' + deviceUUID + "/party/"]);
+                // console.log("Opening the browser to play music.");
               } 
             }
           });
@@ -107,7 +111,7 @@ server.listen(port, function(){
 });
 
 function postTap(deviceUUID, pID, callback) {
-  rem.json('http://entrance-tutorial.herokuapp.com/tap').post({
+  rem.json(host + '/tap').post({
     deviceUUID: deviceUUID,
     pID: pID
   }, function (err, json) {
