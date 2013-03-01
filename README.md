@@ -1,11 +1,11 @@
-Entrance Tutorial
+Music Party Tutorial
 =========
 
 What it is
 ----------
-Entrance is a device that passively streams your favorite music with the tap of an RFID-enabled device. It links the unique ID of your RFID device (like [Charlie Cards](http://www.mbta.com/fares_and_passes/charlie/) and [Clipper Cards](https://www.clippercard.com/ClipperWeb/index.do)) to the Facebook ID of the user, which gives it the ability to find a user’s favorite artists from Facebook and stream them through [Tomahawk](http://blog.tomahawk-player.org/post/41518909327/toma-hk-api-making-music-hacks-easier-since-2013). 
+Music Party is a device that passively streams your favorite music with the tap of an RFID-enabled device. It links the unique ID of your RFID device (like [Charlie Cards](http://www.mbta.com/fares_and_passes/charlie/) and [Clipper Cards](https://www.clippercard.com/ClipperWeb/index.do)) to the Facebook ID of the user, which gives it the ability to find a user’s favorite artists from Facebook and stream them through [Tomahawk](http://blog.tomahawk-player.org/post/41518909327/toma-hk-api-making-music-hacks-easier-since-2013). 
 
-All the final code for the project can be found in this repository. We've also have open-sourced the [Entrance API server](https://github.com/lifegraph/entrance-tutorial-server) repository in case you want to glimpse at the back end or make your own.
+All the final code for the project can be found in this repository. We've also have open-sourced the [Music Party API server](https://github.com/lifegraph/music-party-server) repository in case you want to glimpse at the back end or make your own.
 
 
 What you'll learn
@@ -32,12 +32,12 @@ We’re going to start by setting up our server using Node JS. Node JS is a real
 Great, now we’re ready to start coding. We'll be using the terminal to complete these tasks and for a few similar tasks in the future. On Windows, this can be accessed by hitting the windows key, typing 'cmd', and then pressing enter. On OSX, just open the Terminal application. Run the following commands in the terminal.
 
 ```
-mkdir entrance-tutorial
-cd entrance-tutorial
+mkdir music-party-tutorial
+cd music-party-tutorial
 npm install serialport fs node-uuid rem
 ```
 
-This creates a project directory for us and tells Node Package Manager (AKA npm) to install four node modules (packages of code): serialPort for communicating with Arduino, fs which gives us control of our file system, REM for making easy network calls, and node-uuid, which will allow us to create a unique id for our Entrance device so that the server can keep track of which users are listening to which Entrance. 
+This creates a project directory for us and tells Node Package Manager (AKA npm) to install four node modules (packages of code): serialPort for communicating with Arduino, fs which gives us control of our file system, REM for making easy network calls, and node-uuid, which will allow us to create a unique id for our Music Party device so that the server can keep track of which users are listening to which Music Party device. 
 
 Now we can start creating our server. In your editor of choice ([<3 Sublime Text](http://www.sublimetext.com/)) create a file called “app.js", enter in the code below and save it in our project directory. What we're doing in this chunk is simply importing the code from the module we need to run a web app ('http'), telling the server to listen on port 5000, and sending the same response (“Sweet it seems to be working.”) to every client that tries to connect.
 
@@ -221,8 +221,8 @@ server.listen(port, function(){
 Now restart your server and tap your RFID tag. It should print it out the UUID in 
 terminal!
 	
-Creating an Entrance ID
-Our RFID tags have a unique ID that allows us to keep track of which person is tagging in, but in order to keep track of which Entrance device is contacting it, we need to generate another unique ID. UUIDs are just long numbers that are very likely to be unique (there are 3.4 x 10^38 different combinations).
+Creating an Music Party ID
+Our RFID tags have a unique ID that allows us to keep track of which person is tagging in, but in order to keep track of which Music Party device is contacting it, we need to generate another unique ID. UUIDs are just long numbers that are very likely to be unique (there are 3.4 x 10^38 different combinations).
 
 In code we’ll create a config.json file (no need to make it by hand) in which we store the UUID of our streaming device. Then, when we start the server, we can check if the UUID has been created, and if not, generate one and store it in the file. Replace the contents of your ‘app.js’ file with the following code:
 
@@ -234,7 +234,7 @@ var http = require('http');
 var fs = require('fs');
 
 // Include the uuid module so we can generate one
-// for our Entrance device
+// for our Music Party device
 var uuidGenerator = require('node-uuid');
 
 // Port to listen to requests on
@@ -290,7 +290,7 @@ server.listen(port, function(){
 
   console.log("Listening to port " + port);
 
-  // Grab the UUID of this entrance
+  // Grab the UUID of this music party device
   retrieveUUID(function (err, UUID) {
     // If there was an error, report it and stop
     if (err) return console.log(err);
@@ -388,7 +388,7 @@ var fs = require('fs');
 var spawn = require('child_process').spawn;
 
 // Include the uuid module so we can generate one
-// for our Entrance device
+// for our Music Party device
 var uuidGenerator = require('node-uuid');
 
 // Port to listen to requests on
@@ -419,7 +419,7 @@ server.listen(port, function(){
 
   console.log("Listening to port " + port);
 
-  // Grab the UUID of this entrance
+  // Grab the UUID of this Music Party device
   retrieveUUID(function (err, deviceUUID) {
     // If there was an error, report it and stop
     if (err) return console.log(err);
@@ -466,7 +466,7 @@ server.listen(port, function(){
 });
 
 function postTap(deviceUUID, pID, callback) {
-  rem.json('http://entrance-tutorial.herokuapp.com/tap').post({
+  rem.json('http://musicparty.herokuapp.com/tap').post({
     deviceUUID: deviceUUID,
     pID: pID
   }, function (err, json) {
@@ -541,9 +541,9 @@ function getDeviceUUID(callback) {
 
 If you run that code and tap your RFID tag, you should get an error because your personal device (RFID tag) isn’t synced to a Facebook account. In your web browser, go to the [Lifegraph Connect](http://connect.lifegraphlabs.com/) website. Click the ‘connect’ button and sign in with your Facebook account. After you've signed in to your Facebook account, tap your RFID device and click the button that pops up to sync your personal device.
 
-Great, now we’re ready to start streaming music. The entrance tutorial server, which we passed the tag information to, will keep track of which songs would be most suitable for the users currently listening to it. After we tag in, it will generate JSON with the music information and if we open our Internet browser to http://entrance-tutorial.herokuapp.com/deviceID/party, it will start playing the music.
+Great, now we’re ready to start streaming music. The Music Party server, which we passed the tag information to, will keep track of which songs would be most suitable for the users currently listening to it. After we tag in, it will generate JSON with the music information and if we open our Internet browser to http://musicparty.herokuapp.com/deviceID/party, it will start playing the music.
 
-We can now use a really cool API called [Tomahawk](http://blog.tomahawk-player.org/post/41518909327/toma-hk-api-making-music-hacks-easier-since-2013), which will automatically check many different sources such as SoundCloud, YouTube, Spotify, etc. for a song. When you hit the “party” URL mentioned above, the Tomahawk API will search for each song in the JSON array we provide it and play it when found. The remote entrance back end will take care of all of this for us! Now we just need the code that will automatically open the browser. Paste the following code into your ‘app.js’ file, restart your server, tap your device, and enjoy your music. ☺
+We can now use a really cool API called [Tomahawk](http://blog.tomahawk-player.org/post/41518909327/toma-hk-api-making-music-hacks-easier-since-2013), which will automatically check many different sources such as SoundCloud, YouTube, Spotify, etc. for a song. When you hit the “party” URL mentioned above, the Tomahawk API will search for each song in the JSON array we provide it and play it when found. The remote Music Party back end will take care of all of this for us! Now we just need the code that will automatically open the browser. Paste the following code into your ‘app.js’ file, restart your server, tap your device, and enjoy your music. ☺
 
 ```
 // Include the http module
@@ -561,7 +561,7 @@ var fs = require('fs');
 var spawn = require('child_process').spawn;
 
 // Include the uuid module so we can generate one
-// for our Entrance device
+// for our Music Party device
 var uuidGenerator = require('node-uuid');
 
 // Port to listen to requests on
@@ -592,7 +592,7 @@ server.listen(port, function(){
 
   console.log("Listening to port " + port);
 
-  // Grab the UUID of this entrance
+  // Grab the UUID of this Music Party Device
   retrieveUUID(function (err, deviceUUID) {
     // If there was an error, report it and stop
     if (err) return console.log(err);
@@ -641,7 +641,7 @@ server.listen(port, function(){
                 browserCommand = getCorrectBrowserCommand();
 
                 // Open it
-                spawn(browserCommand, ['http://entrance-tutorial.herokuapp.com/' + deviceUUID + "/party/"]);
+                spawn(browserCommand, ['http://musicparty.herokuapp.com/' + deviceUUID + "/party/"]);
                 console.log("Opening the browser to play music.");
               } 
             }
@@ -653,7 +653,7 @@ server.listen(port, function(){
 });
 
 function postTap(deviceUUID, pID, callback) {
-  rem.json('http://entrance-tutorial.herokuapp.com/tap').post({
+  rem.json('http://musicparty.herokuapp.com/tap').post({
     deviceUUID: deviceUUID,
     pID: pID
   }, function (err, json) {
