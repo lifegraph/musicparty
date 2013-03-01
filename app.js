@@ -13,7 +13,7 @@ var fs = require('fs');
 var spawn = require('child_process').spawn;
 
 // Include the uuid module so we can generate one
-// for our Entrance device
+// for our Music Party device
 var uuidGenerator = require('node-uuid');
 
 // Port to listen to requests on
@@ -33,7 +33,7 @@ var arduino_port = "/dev/tty.usbmodemfd121";
 
 // var host = "http://localhost:5000";
 
-var host = "entrance-tutorial.herokuapp.com";
+var host = "musicparty.herokuapp.com";
 
 
 
@@ -48,7 +48,7 @@ server.listen(port, function(){
 
   console.log("Listening to port " + port);
 
-  // Grab the UUID of this entrance
+  // Grab the UUID of this Music Party device
   retrieveUUID(function (err, deviceUUID) {
     // If there was an error, report it and stop
     if (err) return console.log(err);
