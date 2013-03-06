@@ -48,15 +48,13 @@ var http = require('http');
 var port = 5000;
 
 // Start the http server on port 5000
-var server = http.createServer(function(request, response) {
+var server = http.createServer(function (request, response) {
   response.writeHead(200);
   response.end("Sweet, it seems to be working.");
 });
 
-server.listen(port, function(){
-
-	console.log("Express server listening on port " + port);
-
+server.listen(port, function () {
+  console.log("Express server listening on port", port);
 });
 ```
 
@@ -79,148 +77,12 @@ Place the RFID Shield on top of the Arduino. Go to File->Examples->AdaFruit_NFCS
 
 Now we’re going to send the UUID from the rfid tag to our node server. Our first step is to make sure we only send one UUID over once every two seconds, or else we’ll just inundate our server with useless information.  Create a new Arduino sketch by selecting the Arduino application and clicking the dog-eared paper icon. Title the file ‘arduino_rfid_reader.ino’ and paste the following, slightly modified, Arduino code:
 
-```js
-#include <Wire.h>
-#include <Adafruit_NFCShield_I2C.h>
+## <img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="32"> [arduino_rfid_reader.ino](https://github.com/lifegraph/music-party/blob/master/arduino_rfid_reader/arduino_rfid_reader.ino)
 
-#define IRQ   (2)
-#define RESET (3)  // Not connected by default on the NFC Shield
-
-Adafruit_NFCShield_I2C nfc(IRQ, RESET);
-long lastReadTime = 0;
-
-void setup(void) {
-  Serial.begin(9600);
-  Serial.println("Hello!");
-
-  nfc.begin();
-
-  uint32_t versiondata = nfc.getFirmwareVersion();
-  if (! versiondata) {
-    Serial.print("Didn't find PN53x board");
-    while (1); // halt
-  }
-  // Got ok data, print it out!
-  Serial.print("Found chip PN5"); Serial.println((versiondata>>24) & 0xFF, HEX); 
-  Serial.print("Firmware ver. "); Serial.print((versiondata>>16) & 0xFF, DEC); 
-  Serial.print('.'); Serial.println((versiondata>>8) & 0xFF, DEC);
-  
-  // configure board to read RFID tags
-  nfc.SAMConfig();
-  
-  Serial.println("Waiting for an ISO14443A Card ...");
-}
-
-
-void loop(void) {
-  uint8_t success;
-  int block_num = 24;
-  uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };  // Buffer to store the returned UID
-  uint8_t uidLength;                        // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
-  uint8_t shouldWrite = false;              // if should write to the fob
-  // Wait for an ISO14443A type cards (Mifare, etc.).  When one is found
-  // 'uid' will be populated with the UID, and uidLength will indicate
-  // if the uid is 4 bytes (Mifare Classic) or 7 bytes (Mifare Ultralight)
-  success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength);
-  
-  if (success && millis() - lastReadTime > 2000) {
-    // Display some basic information about the card
-    Serial.println("Found an ISO14443A card");
-    Serial.print("  UID Length: ");Serial.print(uidLength, DEC);Serial.println(" bytes");
-    Serial.print("  UID Value: ");
-    nfc.PrintHex(uid, uidLength);
-    Serial.println("");
-    lastReadTime = millis();
-    
-  }
-}
-
-
-/**************************************************************************/
-/*! 
-    @brief  Prints a hexadecimal value in plain characters
-
-    @param  data      Pointer to the byte data
-    @param  numBytes  Data length in bytes
-*/
-/**************************************************************************/
-void printHexPlain(const byte * data, const uint32_t numBytes)
-{
-  uint32_t szPos;
-  for (szPos=0; szPos < numBytes; szPos++) 
-  {
-    if (data[szPos] <= 0x1F)
-      Serial.print("");
-    else
-      Serial.print((char)data[szPos]);
-  }
-  Serial.println("");
-}
-```
-
-Upload the code to your Arduino again and verify that it can still successfully print out the UUID of your tag but it doesn’t print it again within two seconds. Now we need to modify the server code so that it can read in the Serial data. We’re going to open up a serial port to the Arduino and write out whatever UUID we get over. Replace the contents of your ‘app.js’ file with the code below; the only thing you’ll need to change is the serial port of your Arduino, which is the 8th line of code. You can find it by going to Tools->Serial Port in the Arduino application. 
-
-```js
-// Include the http module
-var http = require('http');
-
-var port = 5000;
-
-// Include the serial port module for comm with Arduino
-var serialport = require("serialport");
-
-// Grab a reference to SerialPort
-var SerialPort = serialport.SerialPort;
-
-// Set the Arduino port (make sure this is right!)
-var arduino_port = "/dev/tty.usbmodemfd121";
-
-// Open up comm on the serial port. Put a newline at the end
-var serialPort = new SerialPort(arduino_port, { 
-  parser: serialport.parsers.readline("\n") 
-});
-
-// When the serial port is opened, let us know
-serialPort.on("open", function (){
- console.log("Successfully opened arduino port.")
-});
-
-// After initialized, when we get a tag from the RF Reader
-serialPort.on("data", function (data) {
-
-  // Print out the tag data
-  console.log("ID Data received: : "+ data);
-
-  // The prefix we set before the uid on the arduino end of things
-  var prefix = "  UID Value: "; // The prefix before the data we care about comes through
-
-  // If we have a uid value
-  if (data.indexOf(prefix) == 0) {
-
-    // Grab the uid
-    pID = data.substring(prefix.length).trim();
-
-    console.log("Server received tap from: " + pID);
-
-  }
-});
-
-// Start the http server on port 5000
-var server = http.createServer(function(request, response) {
-  response.writeHead(200);
-  response.end("Sweet, it seems to be working.");
-});
-
-//
-server.listen(port, function(){
-  console.log("Listening to port " + port);
-});
-```
-
-Now restart your server and tap your RFID tag. It should print it out the UUID in 
-terminal!
+Now restart your server and tap your RFID tag. It should print it out the UUID in  terminal!
 	
-Creating an Music Party ID
+### Creating an Music Party ID
+
 Our RFID tags have a unique ID that allows us to keep track of which person is tagging in, but in order to keep track of which Music Party device is contacting it, we need to generate another unique ID. UUIDs are just long numbers that are very likely to be unique (there are 3.4 x 10^38 different combinations).
 
 In code we’ll create a config.json file (no need to make it by hand) in which we store the UUID of our streaming device. Then, when we start the server, we can check if the UUID has been created, and if not, generate one and store it in the file.
