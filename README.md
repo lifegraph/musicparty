@@ -41,7 +41,7 @@ This creates a project directory for us and tells Node Package Manager (AKA npm)
 
 Now we can start creating our server. In your editor of choice ([<3 Sublime Text](http://www.sublimetext.com/)) create a file called “app.js", enter in the code below and save it in our project directory. What we're doing in this chunk is simply importing the code from the module we need to run a web app ('http'), telling the server to listen on port 5000, and sending the same response (“Sweet it seems to be working.”) to every client that tries to connect.
 
-```
+```js
 // Include the http module
 var http = require('http');
 
@@ -79,7 +79,7 @@ Place the RFID Shield on top of the Arduino. Go to File->Examples->AdaFruit_NFCS
 
 Now we’re going to send the UUID from the rfid tag to our node server. Our first step is to make sure we only send one UUID over once every two seconds, or else we’ll just inundate our server with useless information.  Create a new Arduino sketch by selecting the Arduino application and clicking the dog-eared paper icon. Title the file ‘arduino_rfid_reader.ino’ and paste the following, slightly modified, Arduino code:
 
-```
+```js
 #include <Wire.h>
 #include <Adafruit_NFCShield_I2C.h>
 
@@ -160,7 +160,7 @@ void printHexPlain(const byte * data, const uint32_t numBytes)
 
 Upload the code to your Arduino again and verify that it can still successfully print out the UUID of your tag but it doesn’t print it again within two seconds. Now we need to modify the server code so that it can read in the Serial data. We’re going to open up a serial port to the Arduino and write out whatever UUID we get over. Replace the contents of your ‘app.js’ file with the code below; the only thing you’ll need to change is the serial port of your Arduino, which is the 8th line of code. You can find it by going to Tools->Serial Port in the Arduino application. 
 
-```
+```js
 // Include the http module
 var http = require('http');
 
@@ -217,6 +217,7 @@ server.listen(port, function(){
   console.log("Listening to port " + port);
 
 });
+```
 
 Now restart your server and tap your RFID tag. It should print it out the UUID in 
 terminal!
@@ -226,6 +227,7 @@ Our RFID tags have a unique ID that allows us to keep track of which person is t
 
 In code we’ll create a config.json file (no need to make it by hand) in which we store the UUID of our streaming device. Then, when we start the server, we can check if the UUID has been created, and if not, generate one and store it in the file. Replace the contents of your ‘app.js’ file with the following code:
 
+```js
 // Include the http module
 var http = require('http');
 
@@ -372,7 +374,7 @@ The last thing we need before receiving music from the server is to sync our RFI
 
 We need to add some code to our node server that will let Lifegraph Connect know that we received a tap from our RFID tag. Our server will then tell us if the RFID tag is synced to a Facebook account. We are going to use the REM node module to send information because it wraps a lot of tedious code into a simple API and makes it easy to parse the response. Replace the contents of ‘app.js’ with the following code:
 
-```
+```js
 // Include the http module
 var http = require('http');
 
@@ -545,7 +547,7 @@ Great, now we’re ready to start streaming music. The Music Party server, which
 
 We can now use a really cool API called [Tomahawk](http://blog.tomahawk-player.org/post/41518909327/toma-hk-api-making-music-hacks-easier-since-2013), which will automatically check many different sources such as SoundCloud, YouTube, Spotify, etc. for a song. When you hit the “party” URL mentioned above, the Tomahawk API will search for each song in the JSON array we provide it and play it when found. The remote Music Party back end will take care of all of this for us! Now we just need the code that will automatically open the browser. Paste the following code into your ‘app.js’ file, restart your server, tap your device, and enjoy your music. ☺
 
-```
+```js
 // Include the http module
 var http = require('http');
 
