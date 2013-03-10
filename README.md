@@ -74,7 +74,7 @@ Place the RFID Shield on top of the Arduino. If you have Lady Adafruit's board, 
 
 Now we’re going to send the UUID from the rfid tag to our node server. If you're using the Sparkfun board, you can skip to the next section because we already wrote the code to interface with our Node server. If you have the Adafruit board, our first step is to make sure we only send one UUID over once every two seconds, or else we’ll just inundate our server with useless information.  Create a new Arduino sketch by selecting the Arduino application and clicking the dog-eared paper icon. Title the file ‘arduino_rfid_reader.ino’ and paste the following, slightly modified, Arduino code:
 
-### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> arduino_rfid_reader.ino](https://github.com/lifegraph/music-party/blob/master/arduino_rfid_reader/arduino_rfid_reader.ino)
+### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> arduino_rfid_reader.ino](https://github.com/lifegraph/musicparty/blob/master/arduino_rfid_reader/arduino_rfid_reader.ino)
 
 Now restart your server and tap your RFID tag. It should print it out the UUID in  terminal!
 	
