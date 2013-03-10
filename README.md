@@ -97,5 +97,5 @@ If you run that code and tap your RFID tag, you should get an error because your
 
 We can now use a really cool API called [Tomahawk](http://blog.tomahawk-player.org/post/41518909327/toma-hk-api-making-music-hacks-easier-since-2013), which will automatically check many different sources such as SoundCloud, YouTube, Spotify, etc. for a song. When you hit the “party” URL mentioned above, the Tomahawk API will search for each song in the JSON array we provide it and play it when found. The remote Music Party back end will take care of all of this for us! Now we just need the code that will automatically open the browser. Paste the following code into your ‘app.js’ file, restart your server, tap your device, and enjoy your music. ☺
 
-### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> app.js](https://github.com/lifegraph/music-party/blob/master/app.js)
+### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> app.js](https://github.com/lifegraph/musicparty/blob/master/app.js)
 
