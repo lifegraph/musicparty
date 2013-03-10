@@ -19,6 +19,8 @@ var uuidGenerator = require('node-uuid');
 // Port to listen to requests on
 var port = 6000;
 
+var lifegraph = require('lifegraph');
+
 // Include the serial port module for comm with Arduino
 var serialport = require("serialport");
 
@@ -33,7 +35,7 @@ var arduino_port = "/dev/tty.usbmodemfd121";
 
 // var host = "http://localhost:5000";
 
-var host = "musicparty.herokuapp.com";
+var host = "http://musicparty.herokuapp.com";
 
 
 
@@ -57,7 +59,8 @@ server.listen(port, function(){
 
       // Open up comm on the serial port. Put a newline at the end
       serialPort = new SerialPort(arduino_port, { 
-        parser: serialport.parsers.readline("\n") 
+        parser: serialport.parsers.readline("\n") ,
+        baudrate: 19200
       });
 
       // When the serial port is opened, let us know
