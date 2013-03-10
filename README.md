@@ -17,11 +17,11 @@ What you’ll need
 * A Computer
 * An Internet Connection
 * [An Arduino](https://www.sparkfun.com/products/11021)
-* [Adafruit NFC/RFID Reader Shield](http://www.adafruit.com/products/789) (& [Header Pins](https://www.adafruit.com/products/85) to connect to the Arduino)
+* [Adafruit NFC/RFID Reader Shield](http://www.adafruit.com/products/789) or [Sparkfun RFID shield](https://www.sparkfun.com/products/10406) (& [Header Pins](https://www.adafruit.com/products/85) to connect to the Arduino)
 * [An RFID Tag](http://www.adafruit.com/products/363) (Any 125kHz RFID card will work)
 * A Facebook account (that has ‘liked’ bands/music)
 
-**One more Note:** We’ll guide you through how to do this with the Adafruit RFID Shield but you can easily modify it to be able to work with a different RFID solution if you already own one. 
+**One more Note:** We’ll guide you through how to do this with the above mentioned shields but you can easily modify it to be able to work with a different RFID solution if you already own one. 
 
 Let's get started!
 	
@@ -68,14 +68,11 @@ With your web browser, go to ‘[http://localhost:5000](http://localhost:5000)�
 Detecting RFID
 --------------
 
-Now that we can play music, we’ll need to detect which person is tagging in so that we can play music that they like.
+Connect your Arduino to your computer with a USB cable. If you haven’t already, you’ll need to download and install the [Arduino developing environment](http://arduino.cc/en/main/software). We'll also want to intall some libraries to make this coding less tedious. If you have Lady AdaFruit's board, download the library [here](https://github.com/adafruit/Adafruit_NFCShield_I2C) and if you have the Sparkfun board, download the library [here](https://github.com/lifegraph/sm130) Store it in the Libraries folder of your Arduino (on OSX, the new directory would be ~/Documents/Arduino/libraries/ and on Windows, it would be My Documents\Arduino\libraries\). If you already had the Arduino environment open before placing the code in the Libraries folder, restart it now.
 
-Connect your Arduino to your computer with a USB cable. If you haven’t already, you’ll need to download and install the [Arduino developing environment](http://arduino.cc/en/main/software). We’ve decided to use [Adafruit’s NFC/RFID shield](http://www.adafruit.com/products/363) because it’s well documented, easy to use, and they provide a library to get you started. You’ll need to download the library from [here](https://github.com/adafruit/Adafruit_NFCShield_I2C) and store it in the Libraries folder of your Arduino (on OSX, the new directory would be ~/Documents/Arduino/libraries/ and on Windows, it would be My Documents\Arduino\libraries\). If you already had the Arduino environment open before placing the code in the Libraries folder, restart it now.
+Place the RFID Shield on top of the Arduino. If you have Lady Adafruit's board, go to File->Examples->AdaFruit_NFCShield_I2C->ReadMifare and the Sparkfun board, go to File->Examples->sm130->sm130_test and upload it to the Arduino by clicking the right-facing arrow on the sketch that opens up. Once it finishes uploading, open your serial terminal by clicking Tools->Serial Monitor.  Make sure that you’re listening with 9600 baud if you have Lady Adafruit's board and a 19200 baud if you're using the Sparkfun board. Tap your RFID card against the reader and it should print out the UUID of the card!
 
-
-Place the RFID Shield on top of the Arduino. Go to File->Examples->AdaFruit_NFCShield_I2C->ReadMifare and upload it to the Arduino by clicking the right-facing arrow on the sketch that opens up. Once it finishes uploading, open your serial terminal by clicking Tools->Serial Monitor.  Make sure that you’re listening with 9600 baud. It should say that it’s waiting for an ISO14443A Card. Tap your RFID card against the reader and it should print out the UUID of the card!
-
-Now we’re going to send the UUID from the rfid tag to our node server. Our first step is to make sure we only send one UUID over once every two seconds, or else we’ll just inundate our server with useless information.  Create a new Arduino sketch by selecting the Arduino application and clicking the dog-eared paper icon. Title the file ‘arduino_rfid_reader.ino’ and paste the following, slightly modified, Arduino code:
+Now we’re going to send the UUID from the rfid tag to our node server. If you're using the Sparkfun board, you can skip to the next section because we already wrote the code to interface with our Node server. If you have the Adafruit board, our first step is to make sure we only send one UUID over once every two seconds, or else we’ll just inundate our server with useless information.  Create a new Arduino sketch by selecting the Arduino application and clicking the dog-eared paper icon. Title the file ‘arduino_rfid_reader.ino’ and paste the following, slightly modified, Arduino code:
 
 ### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> arduino_rfid_reader.ino](https://github.com/lifegraph/music-party/blob/master/arduino_rfid_reader/arduino_rfid_reader.ino)
 
