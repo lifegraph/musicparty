@@ -72,13 +72,26 @@ Now we'll need to set up our Arduino to read RFID tags. If you haven't used Ardu
 
 Place the RFID Shield on top of the Arduino. If you have Lady Adafruit's board, go to File->Examples->AdaFruit_NFCShield_I2C->ReadMifare and the Sparkfun board, go to File->Examples->musicparty->musicparty.ino and upload it to the Arduino by clicking the right-facing arrow on the sketch that opens up. Once it finishes uploading, open the Arduino Application's serial monitor by clicking Tools->Serial Monitor.  __Make sure that you’re listening with 9600 baud if you have Lady Adafruit's board and a 19200 baud if you're using the Sparkfun board (the drop down in the bottom right of the Arduino sketch).__ Tap your RFID card against the reader and it should print out the UUID of the card!
 
-Now we’re going to send the UUID from the rfid tag to our node server. __If you're using the Sparkfun board, you can skip to the 'Creating a Music Party ID' section because we already wrote the code to interface with our Node server in the example__. If you have the Adafruit board, our first step is to make sure we only send one UUID over once every two seconds, or else we’ll just inundate our server with useless information.  Create a new Arduino sketch by selecting the Arduino application and clicking the dog-eared paper icon. Title the file ‘arduino_rfid_reader.ino’ and paste the following, slightly modified, Arduino code:
+Now we’re going to send the UUID from the rfid tag to our node server. __If you're using the Sparkfun board, you can skip to the 'Creating a Music Party ID' section because we already wrote the code to interface with our Node server in the example__ (but you should read the code and the comments so you understand what's going on). If you have the Adafruit board, our first step is to make sure we only send one UUID over once every two seconds, or else we’ll just inundate our server with useless information.  Create a new Arduino sketch by selecting the Arduino application and clicking the dog-eared paper icon. 
+
+We'll write our program in testable chunks by first giving you a link to each code chunk which you can copy into your Arduino sketch. Then we'll explain the code line by line below the link and you can run it to make sure it works. First, we'll 'setup' the Arduino:
 
 ### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> arduino_rfid_reader.ino](https://github.com/lifegraph/musicparty/blob/master/arduino_rfid_reader/arduino_rfid_reader.ino)
 
+In this first chunk of code, we import the Wire module for communication with our RFID shield and Lada AdaFruit's custom library because it gives us a really nice interface with the board. We then define the pins we'll use to communicate with the RFID shield and create an RFID object that we'll use to command the shield.
+
+Then, we add the 'setup' method which is a special method that only gets called once everytime the Arduino is restarted. In this method, we'll start running Serial is a communication protocol. Then, we'll start running the RFID shield on line 24. Next, we grab the firmware version just to make sure that our communciation with the board is working effectively - if not, we just loop forever.
+
+If it is, we print out the firmware version, 
+
+Title the file ‘arduino_rfid_reader.ino’ and paste the following, slightly modified, Arduino code:
+
+
+
 Now restart your server and tap your RFID tag. It should print it out the UUID in  terminal!
 	
-### Creating a Music Party ID
+Creating a Music Party ID
+-------------------------
 
 Our RFID tags have a unique ID that allows us to keep track of which person is tagging in, but in order to keep track of which Music Party device is contacting it, we need to generate another unique ID. UUIDs are just long numbers that are very likely to be unique (there are 3.4 x 10^38 different combinations).
 
