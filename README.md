@@ -68,13 +68,15 @@ With your web browser, go to ‘[http://localhost:5000](http://localhost:5000)�
 Detecting RFID
 --------------
 
-Now we'll need to set up our Arduino to read RFID tags. If you haven't used Arduino before or you have trouble along the way, the [Official Getting Started page](http://arduino.cc/en/Guide/HomePage) is very useful. Connect your Arduino to your computer with a USB cable. If you haven’t already, you’ll need to download and install the [Arduino developing environment](http://arduino.cc/en/main/software). We'll also want to intall some libraries to make this coding less tedious. If you have Lady AdaFruit's board, download the library [here](https://github.com/adafruit/Adafruit_NFCShield_I2C) and if you have the Sparkfun board, download the library [here](https://github.com/lifegraph/sm130) Store it in the Libraries folder of your Arduino (on OSX, the default directory would be ~/Documents/Arduino/libraries/ and on Windows, it would be My Documents\Arduino\libraries\) (if you have problems with this, check out [Lady AdaFruit's advice](http://arduino.cc/en/Guide/Libraries). If you already had the Arduino environment open before placing the code in the Libraries folder, restart it now.
+Now we'll need to set up our Arduino to read RFID tags. If you haven't used Arduino before or you have trouble along the way, the [Official Getting Started page](http://arduino.cc/en/Guide/HomePage) is very useful. Connect your Arduino to your computer with a USB cable. If you haven’t already, you’ll need to download and install the [Arduino developing environment](http://arduino.cc/en/main/software). 
 
-Place the RFID Shield on top of the Arduino. Great, now we can get to the code. All the code you'll need can be found in the link below. 
+We'll also want to intall some libraries to make this coding less tedious. If you have Lady AdaFruit's board, download the library [here](https://github.com/adafruit/Adafruit_NFCShield_I2C) and if you have the Sparkfun board, download the library [here](https://github.com/lifegraph/sm130) Store it in the Libraries folder of your Arduino (on OSX, the default directory would be ~/Documents/Arduino/libraries/ and on Windows, it would be My Documents\Arduino\libraries\) (if you have problems with this, check out [Lady AdaFruit's advice](http://arduino.cc/en/Guide/Libraries). If you already had the Arduino environment open before placing the code in the Libraries folder, restart it now.
+
+Place the RFID Shield on top of the Arduino. Now we can get to the code. All the code you'll need can be found in the link below. 
 
 ### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> arduino_rfid_reader.ino](https://github.com/lifegraph/musicparty/blob/master/arduino_rfid_reader/arduino_rfid_reader.ino)
 
-Create a new Arduino sketch by selecting the Arduino application and clicking the dog-eared paper icon, copy the code right in, and save it in your work directory. All you have to do now is uncomment three lines at the top of the file depending on which RDID reader you have. 
+Create a new Arduino sketch by selecting the Arduino application and clicking the dog-eared paper icon, copy the code from the link above right in, and save it in your project directory. All you have to do now is uncomment three lines at the top of the file depending on which RDID reader you have. 
 
 
 If you have the Sparkfun sm130 RFID board, uncomment these three blocks:
@@ -92,11 +94,11 @@ And if you have the Lady Adafruit RFID board, uncomment these three blocks:
 //Adafruit_NFCShield_I2C rfid(2, 3);
 ```
 
-We wrote the sm130 library to match that of the Lady Adafruit library. Now, click the right-facing arrow on the sketch to load the code on the Arduino and start running it. To see the output, open the serial monitor by going to File->Tools->Serial Monitor then make sure your baud rate is set to 9600 (the dropdown on the lower right of the serial monitor).
+The rest of the sketch is the same for both boards because we wrote the sm130 library to match that of the Lady Adafruit library. Now, click the right-facing arrow on the sketch to load the code on the Arduino and start running it. To see the output, open the serial monitor by going to File->Tools->Serial Monitor then make sure your baud rate is set to 9600 (the dropdown on the lower right of the serial monitor).
 
 Now, if you tap your RFID card on the reader, it should print out the Unique ID! Awesome.
 
-I will explain the code line by line below the link if you're interested, or else you can skip to the "Creating A Music Party ID" section. Let's start with the importing code:
+Now I will explain the code line by line if you're interested, or else you can skip to the "Creating A Music Party ID" section. Let's start with the importing code:
 
 ```
 // Uncomment these three lines to use the Sparkfun RFID shield
