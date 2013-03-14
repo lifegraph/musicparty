@@ -7,7 +7,7 @@ Music Party is a device that passively streams your favorite music with the tap 
 
 All the final code for the project can be found in this repository. We've also have open-sourced the [Music Party API server](https://github.com/lifegraph/musicparty-server) repository in case you want to glimpse at the back end or make your own.
 
-
+__Note: this tutorial will only work for OSX and Linux users (unless you already have the .NET Framework already installed on your Windows PC) because of a requirement in the serialport package we use. We're working to make it cross platform and we'll update this tutorial as soon as we do.__
 What you'll learn
 -----------------
 You'll learn how to read RFID cards, communicate between an Arduino and a server, and how to interface with [Lifegraph Connect](http://connect.lifegraphlabs.com/) for authentication and device ID storage.
