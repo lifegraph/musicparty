@@ -5,6 +5,8 @@ What it is
 ----------
 Music Party is a device that passively streams your favorite music with the tap of an RFID-enabled device. It links the unique ID of your RFID device (like [Charlie Cards](http://www.mbta.com/fares_and_passes/charlie/) and [Clipper Cards](https://www.clippercard.com/ClipperWeb/index.do)) to the Facebook ID of the user, which gives it the ability to find a user’s favorite artists from Facebook and stream them through [Tomahawk](http://blog.tomahawk-player.org/post/41518909327/toma-hk-api-making-music-hacks-easier-since-2013). 
 
+You can see an example of what you're going to build [here](http://musicparty.herokuapp.com/westhall/party)!
+
 All the final code for the project can be found in this repository. We've also have open-sourced the [Music Party API server](https://github.com/lifegraph/musicparty-server) repository in case you want to glimpse at the back end or make your own.
 
 __Note: this tutorial will only work for OSX and Linux users (unless you already have the .NET Framework already installed on your Windows PC) because of a requirement in the serialport package we use. We're working to make it cross platform and we'll update this tutorial as soon as we do.__
@@ -98,7 +100,7 @@ The rest of the sketch is the same for both boards because we wrote the sm130 li
 
 Now, if you tap your RFID card on the reader, it should print out the Unique ID! Awesome.
 
-Now I will explain the code line by line if you're interested, or else you can skip to the "Creating A Music Party ID" section. Let's start with the importing code:
+Now I will explain the code line by line if you're interested, or else you can skip to the "Sending the UUID to the Local Server" section. Let's start with the importing code:
 
 ```
 // Uncomment these three lines to use the Sparkfun RFID shield
@@ -186,6 +188,78 @@ void loop() {
 The loop method is called over and over again by Arduino. As soon as it's code completes, it starts over. In our loop method, we create the success, uid, and uidLength variables to store the results of a discovered tag. We then attempt to read a tag, and if we do, the uid will be stored in the uid variable and the length of that uid will be store in uidLength. Then we simply print it out, and note what time it was printed out to make sure it doesn't print over and over again.
 
 Pretty simple. Now we'll configure the server that will be the middleman between the Arduino and our external server so that we can make easy network calls (like telling our server who tagged in). 
+
+Sending the UUID to the Local Server
+------------------------------
+Now we'll put the Arduino code to the side and modify the local server code so that it can read in the Serial data from the Arduino. This will let us use the internet connection of our computer to send the information about our tag to the Music Party Server (which handles actual web traffic). We’re going to open up a serial port to the Arduino and write out whatever UUID we get over. Replace the contents of your ‘app.js’ file with the code below; the only thing you’ll need to change is the serial port of your Arduino (the variable names 'arduino_port', which is the 6th line of code. You can find the serial port your Arduino is using by going to Tools->Serial Port in the Arduino application.
+
+```
+// Include the http module
+var http = require('http');
+
+// Port to listen to requests on
+var port = 6000;
+
+// Include the serial port module for comm with Arduino
+var serialport = require("serialport");
+
+// Grab a reference to SerialPort
+var SerialPort = serialport.SerialPort;
+
+// We'll need to make a serial port object 
+var serialPort;
+
+// Set the Arduino port (make sure this is right!)
+var arduino_port = "/dev/tty.usbmodemfd121";
+
+
+
+// Start the http server on port 5000
+var server = http.createServer(function(request, response) {
+  response.writeHead(200);
+  response.end("Sweet, it seems to be working.");
+});
+
+// Start listening on a port for requests
+server.listen(port, function(){
+
+  console.log("Listening to port " + port);
+
+  // Open up comm on the serial port. Put a newline at the end
+  serialPort = new SerialPort(arduino_port, { 
+    parser: serialport.parsers.readline("\n") ,
+    baudrate: 9600
+  });
+
+  // When the serial port is opened, let us know
+  serialPort.on("open", function (){
+   console.log("Successfully opened arduino port.")
+  });
+
+  // After initialized, when we get a tag from the RF Reader
+  serialPort.on("data", function (data) {
+
+    // Print out the tag data
+    console.log("ID Data received: : "+ data);
+
+    // The prefix we set before the uid on the arduino end of things
+    var prefix = "UID Value: "; // The prefix before the data we care about comes through
+
+    // If we have a uid value
+    if (data.indexOf(prefix) >= 0) {
+
+      // Grab the uid
+      pID = data.substring(prefix.length).trim();
+
+      console.log("Server received tap from: " + pID);
+    }
+  });
+});
+
+```
+
+If you keep your arduino powered, run this local server code by running 'node app.js' (from the terminal) in the project directory, tap your RFID card on the reader, you should see it print out the UUID of that card in the terminal! This code works by simply opening up a serial port, and reading what the Arduino prints out. Feel free to read the extremely verbose comments in that code snippet to learn more about how exactly it works.
+
 	
 Creating a Music Party ID
 -------------------------
