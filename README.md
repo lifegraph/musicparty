@@ -193,7 +193,7 @@ Sending the UUID to the Local Server
 ------------------------------
 Now we'll put the Arduino code to the side and modify the local server code so that it can read in the Serial data from the Arduino. This will let us use the internet connection of our computer to send the information about our tag to the Music Party Server (which handles actual web traffic). We’re going to open up a serial port to the Arduino and write out whatever UUID we get over. Replace the contents of your ‘app.js’ file with the code below; the only thing you’ll need to change is the serial port of your Arduino (the variable names 'arduino_port', which is the 6th line of code. You can find the serial port your Arduino is using by going to Tools->Serial Port in the Arduino application.
 
-### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24">app.js](https://raw.github.com/lifegraph/musicparty/master/tutorial_code_snippets/app-readUUID.js)
+### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> app.js](https://raw.github.com/lifegraph/musicparty/master/tutorial_code_snippets/app-readUUID.js)
 
 If you keep your arduino powered, run this local server code by running 'node app-readUUID.js' (from the terminal) in the project directory, tap your RFID card on the reader, you should see it print out the UUID of that card in the terminal! This code works by simply opening up a serial port, and reading what the Arduino prints out. Feel free to read the extremely verbose comments in that code snippet to learn more about how exactly it works.
 
@@ -207,7 +207,7 @@ In code we’ll create a config.json file in which we store the Unique ID of our
 
 Copy the code from the link below and paste it into your 'app.js' file. Again, feel free to read the verbose comments to understand how it's working. Run 'node app.js' and make sure the terminal reports that it created a new UUID in the config file!
 
-### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24">app-deviceUUID.js](https://raw.github.com/lifegraph/musicparty/master/tutorial_code_snippets/app-readUUID.js)
+### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> app-deviceUUID.js](https://raw.github.com/lifegraph/musicparty/master/tutorial_code_snippets/app-readUUID.js)
 
 Alternatively, you can simply make a config.json file (or edit the one that is made automatically), to have a custom device ID. For example, in the config.json, you can have:
 
@@ -217,8 +217,52 @@ Alternatively, you can simply make a config.json file (or edit the one that is m
 
 It will make your music party room name more memorable (just make sure it's not too generic or else you risk sharing it with a random other person!).
 
-Syncing With the Server
+Connecting With the Music Party Server
 -----------------------
+
+Now we'll need to send up the tag ID and the device ID to the server so it knows to add users to our music party. We're going to use the 'rem' node package to make sending the HTTP call (with our tag ID and device ID) to the server really simple.
+
+The code for this section can be found at the link below. Copy it and paste it into your 'app.js' file. 
+
+### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> app-rem.js](https://raw.github.com/lifegraph/musicparty/master/tutorial_code_snippets/app-rem.js)
+
+We made very few additions. We simply imported rem:
+
+```
+var rem = require('rem');
+```
+
+We defined the hostname of our server:
+
+```
+var host = "http://musicparty.herokuapp.com";
+```
+We wrote the method to send the device ID and tap ID to the server and receive the reponse:
+
+```
+function postTap(deviceUUID, pID, callback) {
+  rem.json(host + '/tap').post({
+    deviceUUID: deviceUUID,
+    pID: pID
+  }, function (err, json) {
+    return callback(err, json);
+  });
+}
+```
+
+And finally, we posted the tap to the server after reading it through serial:
+
+```
+// Post the tap to the server
+postTap(deviceUUID, pID, function (err, res) {
+  console.log("res")
+});
+        
+```
+
+Now, if we run that code, it should send out the ID's to the server and return with a response. The response should tell you to connect your device to Lifegraph Connect which is what we'll do next.
+
+
 
 The last thing we need before receiving music from the server is to sync our RFID tag with our Facebook ID. The team at [Lifegraph Labs](http://lifegraphlabs.com) has created a website and an API called [Lifegraph Connect](http://connect.lifegraphlabs.com/) to let you easily sync a physical identity (your RFID tag) with a virtual identity (your Facebook ID) that we’ll take advantage of for this tutorial. If you would like to know more about how to make a backend API yourself, let us know and we’ll update the tutorial!
 
