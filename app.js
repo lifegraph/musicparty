@@ -85,7 +85,6 @@ server.listen(port, function(){
           // Post the tap to the server
           postTap(deviceUUID, pID, function (err, res) {
 
-            console.log("res")
             if (err) return console.log("Error posting tap: " + err);
 
             else if (res.error) return console.log("Server returned err: " + res.error);
@@ -99,8 +98,8 @@ server.listen(port, function(){
                 browserCommand = getCorrectBrowserCommand();
 
                 // Open it
-                // spawn(browserCommand, [host + '/' + deviceUUID + "/party/"]);
-                // console.log("Opening the browser to play music.");
+                spawn(browserCommand, [host + '/' + deviceUUID + "/party/"]);
+                console.log("Opening the browser to play music.");
               } 
             }
           });
