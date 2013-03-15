@@ -20,7 +20,7 @@ What you’ll need
 * An Internet Connection
 * [An Arduino](https://www.sparkfun.com/products/11021)
 * [Adafruit NFC/RFID Reader Shield](http://www.adafruit.com/products/789) or [Sparkfun RFID shield](https://www.sparkfun.com/products/10406) (& [Header Pins](https://www.adafruit.com/products/85) to connect to the Arduino)
-* [An RFID Tag](http://www.adafruit.com/products/363) (Any 125kHz RFID card will work)
+* [An RFID Tag](http://www.adafruit.com/products/363) (Any 13.56kHz RFID card will work)
 * A Facebook account (that has ‘liked’ bands/music)
 
 **One more Note:** We’ll guide you through how to do this with the above mentioned shields but you can easily modify it to be able to work with a different RFID solution if you already own one. 
@@ -220,7 +220,7 @@ It will make your music party room name more memorable (just make sure it's not 
 Connecting With the Music Party Server
 -----------------------
 
-Now we'll need to send up the tag ID and the device ID to the server so it knows to add users to our music party. We're going to use the 'rem' node package to make sending the HTTP call (with our tag ID and device ID) to the server really simple.
+Now we'll need to send up the tag ID and the device ID to the server so it knows to add users to our music party. We're going to use the 'rem' node package to make sending the HTTP call (with our tag ID and device ID) to the server really simple. If you would like to know more about how to make a backend API (like the Music Party Server) yourself, let us know and we’ll create a tutorial for it! For now, check out the code [here](https://github.com/lifegraph/musicparty-server)).
 
 The code for this section can be found at the link below. Copy it and paste it into your 'app.js' file. 
 
@@ -255,18 +255,25 @@ And finally, we posted the tap to the server after reading it through serial:
 ```
 // Post the tap to the server
 postTap(deviceUUID, pID, function (err, res) {
-  console.log("res")
+  console.log(res);
 });
         
 ```
 
-Now, if we run that code, it should send out the ID's to the server and return with a response. The response should tell you to connect your device to Lifegraph Connect which is what we'll do next.
+Now, if we run that code, it should send out the ID's to the server and return with a response. The response should tell you "'Physical ID has not been bound to an account. Go to http://connect.lifegraphlabs.com/, Connect with Music Player App, and tap again.'" which is what we'll do next.
 
+Syncing Physical IDs to Virtual IDs with Lifegraph Connect
+-----------------------------------------------------------
 
+The last thing we need before receiving music from the server is to sync our RFID tag with our Facebook ID. The team at [Lifegraph Labs](http://lifegraphlabs.com) has created a website and an API called [Lifegraph Connect](http://connect.lifegraphlabs.com/) to let you easily sync a physical identity (your RFID tag) with a virtual identity (your Facebook ID) that we’ll take advantage of for this tutorial.
 
-The last thing we need before receiving music from the server is to sync our RFID tag with our Facebook ID. The team at [Lifegraph Labs](http://lifegraphlabs.com) has created a website and an API called [Lifegraph Connect](http://connect.lifegraphlabs.com/) to let you easily sync a physical identity (your RFID tag) with a virtual identity (your Facebook ID) that we’ll take advantage of for this tutorial. If you would like to know more about how to make a backend API yourself, let us know and we’ll update the tutorial!
+Make sure your Arduino and local server is running and go to [Lifegraph Connect](http://connect.lifegraphlabs.com/). Click the "Login to see access" button next to the music party app". Login with your Facebook account which will then redirect you back to Lifegraph Connect. Click the "Allow access" button next to Music Party. Now, tap your RFID card against the RFID reader, and a un-claimed ID should appear near the top of Lifegraph Connect. Click the button to claim it. Great, now we've synced our physical and virtual ID! 
 
-We need to add some code to our node server that will let Lifegraph Connect know that we received a tap from our RFID tag. Our server will then tell us if the RFID tag is synced to a Facebook account. We are going to use the Rem node module to send information because it wraps a lot of tedious code into a simple API and makes it easy to parse the response.
+Note: We realize that was a lot of clicks and are in the process of making this syncing process easier.  
+
+Final Part: Automatically open browser window to play
+-----------------------------------------------------
+
 
 Great, now we’re ready to start streaming music. The Music Party server, which we passed the tag information to, will keep track of which songs would be most suitable for the users currently listening to it. After we tag in, it will generate JSON with the music information and if we open our Internet browser to http://musicparty.herokuapp.com/deviceID/party, it will start playing the music.
 
