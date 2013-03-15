@@ -74,7 +74,7 @@ We'll also want to intall some libraries to make this coding less tedious. If yo
 
 Place the RFID Shield on top of the Arduino. Now we can get to the code. All the code you'll need can be found in the link below. 
 
-### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> arduino_rfid_reader.ino](https://github.com/lifegraph/musicparty/blob/master/arduino_rfid_reader/arduino_rfid_reader.ino)
+### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> arduino_rfid_reader.ino](https://raw.github.com/lifegraph/musicparty/master/arduino_rfid_reader/arduino_rfid_reader.ino)
 
 Create a new Arduino sketch by selecting the Arduino application and clicking the dog-eared paper icon, copy the code from the link above right in, and save it in your project directory. All you have to do now is uncomment three lines at the top of the file depending on which RDID reader you have. 
 
