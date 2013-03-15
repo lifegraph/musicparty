@@ -274,12 +274,42 @@ Note: We realize that was a lot of clicks and are in the process of making this 
 Final Part: Automatically open browser window to play
 -----------------------------------------------------
 
+You can actually use the Music Party Service now. If you tap your card against the reader (while your Arduino and local server are running), the terminal should report that the user was added to the streaming session. If you then open your browser to http://musicparty.herokuapp.com/*YOUR_DEVICEID_HERE*/party, you can start your music party!
 
-Great, now we’re ready to start streaming music. The Music Party server, which we passed the tag information to, will keep track of which songs would be most suitable for the users currently listening to it. After we tag in, it will generate JSON with the music information and if we open our Internet browser to http://musicparty.herokuapp.com/deviceID/party, it will start playing the music.
+But just to make things easier, we're going to make our local server automatically open our browser window to the right URL.
 
-If you run that code and tap your RFID tag, you should get an error because your personal device (RFID tag) isn’t synced to a Facebook account. In your web browser, go to the [Lifegraph Connect](http://connect.lifegraphlabs.com/) website. Click the ‘connect’ button and sign in with your Facebook account. After you've signed in to your Facebook account, tap your RFID device and click the button that pops up to sync your personal device.
+The link to the complete, functioning local server code can be found below. Copy and paste it into your 'app.js' file.
 
-We can now use a really cool API called [Tomahawk](http://blog.tomahawk-player.org/post/41518909327/toma-hk-api-making-music-hacks-easier-since-2013), which will automatically check many different sources such as SoundCloud, YouTube, Spotify, etc. for a song. When you hit the “party” URL mentioned above, the Tomahawk API will search for each song in the JSON array we provide it and play it when found. The remote Music Party back end will take care of all of this for us! Now we just need the code that will automatically open the browser. Paste the following code into your ‘app.js’ file, restart your server, tap your device, and enjoy your music. ☺
+### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> app.js](https://raw.github.com/lifegraph/musicparty/master/app.js)
 
-### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> app.js](https://github.com/lifegraph/musicparty/blob/master/app.js)
+We basically just added a function to find the correct command to open the browser based on what OS you're using:
+```
+function getCorrectBrowserCommand() {
+  var isWin = !!process.platform.match(/^win/i);
+  var isMac = !!process.platform.match(/^darwin/i);
+  if (isWin) {
+    return 'start';
+  } else if (isMac) {
+    return 'open';
+  } else {
+    return 'xdg-open';
+  }
+}
+```
+
+Then we call that function with the URL when an empty room gets a new user (yes, if you are the only person in a room and tag out, then tag back in, it will open a new window. We haven't been able to kill the old browser process yet...):
+
+```
+// Grab the correct command for opening a browser (OS dependent)
+browserCommand = getCorrectBrowserCommand();
+
+// Open it
+spawn(browserCommand, [host + '/' + deviceUUID + "/party/"]);
+```
+
+Now you and your friends can tap in to listen to music together, and tap out when you're done!
+
+The music party website uses a really cool API called [Tomahawk](http://blog.tomahawk-player.org/post/41518909327/toma-hk-api-making-music-hacks-easier-since-2013), which will automatically check many different sources such as SoundCloud, YouTube, Spotify, etc. for a song. When you hit the “party” URL mentioned above, the Tomahawk API will search for each song in the JSON array we provide it and play it when found. The remote Music Party back end will take care of all of this for us! 
+
+If you have any questions about the tutorial or the remote [Music Party Server])https://github.com/lifegraph/musicparty-server), please [get in touch with us](https://twitter.com/lifegraphlabs).
 
