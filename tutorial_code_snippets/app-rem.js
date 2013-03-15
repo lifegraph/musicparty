@@ -16,6 +16,19 @@ var serialPort;
 // Set the Arduino port (make sure this is right!)
 var arduino_port = "/dev/tty.usbmodemfd121";
 
+// Include the fs module to access the UUID
+// inside the config.json file
+var fs = require('fs');
+
+// Include the uuid module so we can generate one
+// for our Music Party device
+var uuidGenerator = require('node-uuid');
+
+// Include rem for super easy communication with the server
+var rem = require('rem');
+
+var host = "http://musicparty.herokuapp.com";
+
 
 
 // Start the http server on port 5000
@@ -29,36 +42,59 @@ server.listen(port, function(){
 
   console.log("Listening to port " + port);
 
-  // Open up comm on the serial port. Put a newline at the end
-  serialPort = new SerialPort(arduino_port, { 
-    parser: serialport.parsers.readline("\n") ,
-    baudrate: 9600
-  });
+    // Grab the UUID of this Music Party device
+  retrieveUUID(function (err, deviceUUID) {
+    // If there was an error, report it and stop
+    if (err) return console.log(err);
 
-  // When the serial port is opened, let us know
-  serialPort.on("open", function (){
-   console.log("Successfully opened arduino port.")
-  });
+    // Open up comm on the serial port. Put a newline at the end
+    serialPort = new SerialPort(arduino_port, { 
+      parser: serialport.parsers.readline("\n") ,
+      baudrate: 9600
+    });
 
-  // After initialized, when we get a tag from the RF Reader
-  serialPort.on("data", function (data) {
+    // When the serial port is opened, let us know
+    serialPort.on("open", function (){
+     console.log("Successfully opened arduino port.")
+    });
 
-    // Print out the tag data
-    console.log("ID Data received: : "+ data);
+    // After initialized, when we get a tag from the RF Reader
+    serialPort.on("data", function (data) {
 
-    // The prefix we set before the uid on the arduino end of things
-    var prefix = "UID Value: "; // The prefix before the data we care about comes through
+      // Print out the tag data
+      console.log("ID Data received: : "+ data);
 
-    // If we have a uid value
-    if (data.indexOf(prefix) >= 0) {
+      // The prefix we set before the uid on the arduino end of things
+      var prefix = "UID Value: "; // The prefix before the data we care about comes through
 
-      // Grab the uid
-      pID = data.substring(prefix.length).trim();
+      // If we have a uid value
+      if (data.indexOf(prefix) >= 0) {
 
-      console.log("Server received tap from: " + pID);
-    }
+        // Grab the uid
+        pID = data.substring(prefix.length).trim();
+
+        console.log("Server received tap from: " + pID);
+
+        // Post the tap to the server
+        postTap(deviceUUID, pID, function (err, res) {
+
+          console.log("Music Party Server Response: ", res);
+    
+        });
+      }
+    });
   });
 });
+
+function postTap(deviceUUID, pID, callback) {
+  rem.json(host + '/tap').post({
+    deviceUUID: deviceUUID,
+    pID: pID
+  }, function (err, json) {
+    return callback(err, json);
+  });
+}
+
 
 /*
  * Wrapper function to extract the uuid if the
