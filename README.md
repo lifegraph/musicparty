@@ -193,9 +193,9 @@ Sending the UUID to the Local Server
 ------------------------------
 Now we'll put the Arduino code to the side and modify the local server code so that it can read in the Serial data from the Arduino. This will let us use the internet connection of our computer to send the information about our tag to the Music Party Server (which handles actual web traffic). We’re going to open up a serial port to the Arduino and write out whatever UUID we get over. Replace the contents of your ‘app.js’ file with the code below; the only thing you’ll need to change is the serial port of your Arduino (the variable names 'arduino_port', which is the 6th line of code. You can find the serial port your Arduino is using by going to Tools->Serial Port in the Arduino application.
 
-### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> arduino_rfid_reader.ino](https://raw.github.com/lifegraph/musicparty/master/tutorial_code_snippets/app-readUUID.js)
+### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24">app.js](https://raw.github.com/lifegraph/musicparty/master/tutorial_code_snippets/app-readUUID.js)
 
-If you keep your arduino powered, run this local server code by running 'node app.js' (from the terminal) in the project directory, tap your RFID card on the reader, you should see it print out the UUID of that card in the terminal! This code works by simply opening up a serial port, and reading what the Arduino prints out. Feel free to read the extremely verbose comments in that code snippet to learn more about how exactly it works.
+If you keep your arduino powered, run this local server code by running 'node app-readUUID.js' (from the terminal) in the project directory, tap your RFID card on the reader, you should see it print out the UUID of that card in the terminal! This code works by simply opening up a serial port, and reading what the Arduino prints out. Feel free to read the extremely verbose comments in that code snippet to learn more about how exactly it works.
 
 	
 Creating a Music Party ID
@@ -203,11 +203,19 @@ Creating a Music Party ID
 
 Our RFID tags have a unique ID that allows us to keep track of which person is tagging in, but in order to keep track of which Music Party device is contacting it, we need to generate another unique ID. UUIDs are just long numbers that are very likely to be unique (there are 3.4 x 10^38 different combinations).
 
-In code we’ll create a config.json file (no need to make it by hand) in which we store the UUID of our streaming device. Then, when we start the server, we can check if the UUID has been created, and if not, generate one and store it in the file.
+In code we’ll create a config.json file in which we store the Unique ID of our streaming device. Then, when we start the server, we can check if the ID has been created, and if not, generate one and store it in the file.
 
-Copy the code from the link below and paste it into your 'app.js' file. Again, feel free to read the verbose comments to understand how it's working.
+Copy the code from the link below and paste it into your 'app.js' file. Again, feel free to read the verbose comments to understand how it's working. Run 'node app.js' and make sure the terminal reports that it created a new UUID in the config file!
 
+### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24">app-deviceUUID.js](https://raw.github.com/lifegraph/musicparty/master/tutorial_code_snippets/app-readUUID.js)
 
+Alternatively, you can simply make a config.json file (or edit the one that is made automatically), to have a custom device ID. For example, in the config.json, you can have:
+
+```
+{"deviceUUID":"lifegraph-lab"}
+```
+
+It will make your music party room name more memorable (just make sure it's not too generic or else you risk sharing it with a random other person!).
 
 Syncing With the Server
 -----------------------
