@@ -11,7 +11,7 @@ WiFly wifly;
 const char mySSID[] = "OLIN_GUEST";
 const char myPassword[] = "The_Phoenix_Flies";
 
-const char host[] = "http://musicparty.herokuapp.com";
+const char host[] = "musicparty.herokuapp.com";
 
 // The number of seconds to wait before accepting another tag
 const uint8_t TIME_DELAY = 2;
@@ -20,6 +20,8 @@ long lastReadTime = 0;
 
 char deviceId[] = "test-party";
 char endpoint[] = "/tap";
+
+void postTap(uint8_t *pId, uint8_t pIdLength);
 
 void setup()
 {
@@ -62,20 +64,9 @@ void setup()
         wifly.close();
     }
     
-    if (wifly.open(host, 80)) {
-        Serial.print("Connected to ");
-	Serial.println(host);
-
-	/* Send the request */
-	wifly.println("GET / HTTP/1.0");
-	wifly.println();
-    } else {
-        Serial.println("Failed to connect");
-    }
-    
   // Start running the RFID shield
   rfid.begin();
-    
+  
   Serial.println("Requesting Firmware Version to make sure comm is working...");
 
   // Grab the firmware version
@@ -107,51 +98,79 @@ void loop() {
 
   // If we succesfully received a tag and it has been greater than the time delay (in seconds)
   if (success &&  (millis() - lastReadTime > (TIME_DELAY * 1000))) {
+    
     Serial.println("Got a tag!");
     // Print out the length
     Serial.print("Length: ");
+    
     Serial.print(pIdLength, HEX);
+    
     Serial.print(", ID: ");
     
     // Print the ID in hex format
     rfid.PrintHex(pId, pIdLength);
+    
     Serial.println("");
     
+    wifiSerial.listen();
+    
     if (wifly.open(host, 80)) {
-      
-      // Send it to the server
-      String params = String("{deviceId: '") + deviceId + String("', pId: '") + String((char *)pId) +String("'}");
-      String paramsLength = String(params.length());
-      
-      
-      wifly.print("POST ");
-      wifly.print(endpoint);
-      wifly.println(" HTTP/1.1");
-      
-      Serial.print("endpoint: ");
-      Serial.println(endpoint);
-      
-      wifly.println("Content-type: application/json");
-      wifly.println("Connection: close");
-      
-      wifly.print("Host: ");
-      wifly.println(host);
-      Serial.println("Host: "+ String(host));
-      
-      wifly.print("Content-Length: ");
-      wifly.println(paramsLength);
-      Serial.println("Content-Length: ");
-      Serial.print(paramsLength);
-      wifly.println();
-      wifly.print(params);
-      Serial.println(params);
-      
-      Serial.println("Posted pId to Music Party Server");
+        Serial.print("Connected to ");
+	Serial.println(host);
+
+	/* Send the request */
+        postTap(pId, pIdLength);
+        Serial.println("Posted pId to Music Party Server");
     } else {
-      Serial.print("Could not connec to host");
+        Serial.println("Failed to connect");
     }
 
+
+    rfid.begin();
     // Same the last read time
     lastReadTime = millis();
   }
 }
+
+void postTap(uint8_t *pId, uint8_t pIdLength) {
+  
+  String params = "{\"deviceId\": \"test-party\",\"pId\": \"";
+  
+  uint8_t szPos;
+  for (szPos=0; szPos < pIdLength; szPos++) 
+  {
+    params = params + String(pId[szPos]);
+  }
+  
+  params = params + "\"}";
+  
+//  String params = "{\"deviceId\": \"test-party\",\"pId\": \"30\"}";
+  String paramsLength = String(params.length());
+  
+  wifly.print("POST ");
+  wifly.print(endpoint);
+  wifly.println(" HTTP/1.1");
+  wifly.print("Host: ");
+  wifly.println(host);
+  wifly.println("Content-type: application/json");
+  wifly.println("Accept: application/json");
+  wifly.print("Content-Length: ");
+  wifly.println(paramsLength);
+  wifly.println("User-Agent: musicparty/0.0.1");
+  wifly.println();
+  wifly.println(params);
+}
+
+            /* Send the request */
+//      wifly.println("POST /tap HTTP/1.1");
+//      wifly.println("Host: musicparty.herokuapp.com");
+//      wifly.println("Content-type: application/json");
+//      wifly.println("Accept: application/json");
+//      wifly.print("Content-Length: ");
+//      wifly.println(paramsLength);
+//      wifly.println("User-Agent: easyPEP/0.0.1");
+//      wifly.println();
+//      wifly.println(params);
+
+//      String params = "{\"deviceId\": \"test-party\",\"pId\": \"30\"}";
+//      String paramsLength = String(params.length());
