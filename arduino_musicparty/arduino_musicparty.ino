@@ -2,6 +2,7 @@
 #include <Lifegraph.h>
 #include <sm130.h>
 #include <SoftwareSerial.h>
+#include <avr/pgmspace.h>
 
 
 NFCReader rfid(7, 8);
@@ -97,15 +98,15 @@ void loop() {
   
 //    pIdStringFromInts(pIdString, pId, pIdLength);
 
-    char * origin = pIdString;
-    while (pId++) {
-      
-      pIdString+= snprintf(pIdString, 3, "%02x", pId);
-    }
+//    char * origin = pIdString;
+//    while (pId++) {
+//      
+//      pIdString+= snprintf(pIdString, 3, "%02x", pId);
+//    }
 //    Serial.print("String PID");
 //    Serial.println(pIdString);
     
-    api.form("pId", origin);  
+    api.form("pId", "30");  
     
     // Send the request and get a response
     int response = api.request();
@@ -116,6 +117,9 @@ void loop() {
     // Same the last read time
     lastReadTime = millis();
   }
+  
+  Serial.print("Free memory: ");
+  Serial.println(freeRam(), DEC);
 }
 
 //void pIdStringFromInts(char *pIdStringBuffer, uint8_t *pId, uint8_t pIdLength) {
@@ -129,4 +133,9 @@ void printTagInfo(uint8_t *pId, uint8_t pIdLength) {
     Serial.print(", ID: ");
     rfid.PrintHex(pId, pIdLength);
     Serial.println("");
+}
+int freeRam () {
+  extern int __heap_start, *__brkval;
+  int v;
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
 }
