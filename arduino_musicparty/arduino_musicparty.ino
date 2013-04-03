@@ -2,17 +2,21 @@
 #include <Lifegraph.h>
 #include <sm130.h>
 #include <SoftwareSerial.h>
-#include <avr/pgmspace.h>
 
-
+// RFID Reader Object
 NFCReader rfid(7, 8);
-SoftwareSerial wifiSerial(2,3);
+
+// Wifi Serial connection
+SoftwareSerial wifiSerial(9,10);
+
+// API we'll use to talk to the internet
 JSONAPI api;
 
 /* Change these to match your WiFi network */
-const char mySSID[] = "OLIN_GUEST";
-const char myPassword[] = "The_Phoenix_Flies";
+const char mySSID[] = "YOUR_NETWORK_NAME";
+const char myPassword[] = "YOUR_NETWORK_PASSWORD";
 
+// The host server that handles our request
 const char host[] = "musicparty.herokuapp.com";
 
 // The number of seconds to wait before accepting another tag
@@ -23,7 +27,7 @@ long lastReadTime = 0;
 // Unique ID of this Music Party Streaming Device
 char deviceId[] = "test-party";
 
-//void pIdStringFromInts(char *pIdStringBuffer, uint8_t *pId, uint8_t pIdLength);
+// Helper function to print out the id of the tag
 void printTagInfo(uint8_t *pId, uint8_t pIdLength);
 
 void setup()
@@ -75,7 +79,7 @@ void loop() {
   uint8_t pId[] = { 0, 0, 0, 0, 0, 0, 0 };  // Buffer to store the returned UID
   uint8_t pIdLength;                        // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
   
-  char pIdString[24];
+  char pIdString[17];
 
   // Wait for an ISO14443A type cards (Mifare, etc.).  When one is found
   // 'uid' will be populated with the UID, and uidLength will indicate the length
@@ -94,19 +98,12 @@ void loop() {
     api.post("/tap");
     // Add the device Idparam
     api.form("deviceId", deviceId);
-    // Add the pId param
-  
-//    pIdStringFromInts(pIdString, pId, pIdLength);
-
-//    char * origin = pIdString;
-//    while (pId++) {
-//      
-//      pIdString+= snprintf(pIdString, 3, "%02x", pId);
-//    }
-//    Serial.print("String PID");
-//    Serial.println(pIdString);
     
-    api.form("pId", "30");  
+    // Convert the pId from uint8_t to a char so the server can understand it
+    Lifegraph.stringifyTag(pId, pIdLength, pIdString);
+    
+    // Add the pId param
+    api.form("pId", pIdString);  
     
     // Send the request and get a response
     int response = api.request();
@@ -117,15 +114,8 @@ void loop() {
     // Same the last read time
     lastReadTime = millis();
   }
-  
-  Serial.print("Free memory: ");
-  Serial.println(freeRam(), DEC);
 }
 
-//void pIdStringFromInts(char *pIdStringBuffer, uint8_t *pId, uint8_t pIdLength) {
-//
-//  snprintf(pIdStringBuffer, 24, "%02x", pId);
-//}
 void printTagInfo(uint8_t *pId, uint8_t pIdLength) {
     Serial.println("Got a tag!");
     Serial.print("Length: ");
@@ -134,8 +124,4 @@ void printTagInfo(uint8_t *pId, uint8_t pIdLength) {
     rfid.PrintHex(pId, pIdLength);
     Serial.println("");
 }
-int freeRam () {
-  extern int __heap_start, *__brkval;
-  int v;
-  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
-}
+
