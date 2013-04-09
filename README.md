@@ -7,11 +7,11 @@ What it is
 ----------
 Music Party is a device that passively streams your favorite music with the tap of an RFID-enabled device. It links the unique ID of your RFID device (like [Charlie Cards](http://www.mbta.com/fares_and_passes/charlie/) and [Clipper Cards](https://www.clippercard.com/ClipperWeb/index.do)) to the Facebook ID of the user, which gives it the ability to find a user’s favorite artists from Facebook and stream them through [Tomahawk](http://blog.tomahawk-player.org/post/41518909327/toma-hk-api-making-music-hacks-easier-since-2013). 
 
-You can see an example of what you're going to build [here](http://musicparty.herokuapp.com/public/party)!
+You can see an example of what you're going to build [here](http://musicparty.herokuapp.com/public/party) and see a one minute video tutorial [here](http://www.youtube.com/watch?v=NwCwJBTxqjQ)!
 
 All the final code for the project can be found in this repository. We've also have open-sourced the [Music Party API server](https://github.com/lifegraph/musicparty-server) repository in case you want to glimpse at the back end or make your own.
 
-__Note: this tutorial will only work for OSX and Linux users (unless you already have the .NET Framework already installed on your Windows PC) because of a requirement in the serialport package we use. We're working to make it cross platform and we'll update this tutorial as soon as we do.__
+
 What you'll learn
 -----------------
 You'll learn how to read RFID cards, communicate between an Arduino and a server, and how to interface with [Lifegraph Connect](http://connect.lifegraphlabs.com/) for authentication and device ID storage.
@@ -22,52 +22,31 @@ What you’ll need
 * An Internet Connection
 * [An Arduino](https://www.sparkfun.com/products/11021)
 * [Adafruit NFC/RFID Reader Shield](http://www.adafruit.com/products/789) or [Sparkfun RFID shield](https://www.sparkfun.com/products/10406) (& [Header Pins](https://www.adafruit.com/products/85) to connect to the Arduino)
+* [WiFly Module](www.sparkfun.com/products/10822)
 * [An RFID Tag](http://www.adafruit.com/products/363) (Any 13.56kHz RFID card will work)
 * A Facebook account (that has ‘liked’ bands/music)
 
-**One more Note:** We’ll guide you through how to do this with the above mentioned shields but you can easily modify it to be able to work with a different RFID solution if you already own one. 
+**Quick ote:** We’ll guide you through how to do this with the above mentioned shields but you can easily modify it to be able to work with a different RFID solution if you already own one. 
 
-Let's get started!
+**System Overview**
+
+Check out the block diagram image below for a pictorial representation of the system or follow along with the video above.
+
+![System Diagram](http://www.instructables.com/files/deriv/FDZ/UZHC/HF243295/FDZUZHCHF243295.LARGE.jpg)
+
+It starts with the RFID reader reading the unique id of whatever device/card was placed near it (we'll call this the Tap ID). The reader passes the Tag ID on to the Arduino which sends it and the Device ID (which you will make up) out to our Music Server through the WiFly module. That's as much as you need to build! The rest has been extracted into a separate server that can handle everyone's requests to remove a lot of the complexity. If you want to configure your own server you can check out [the Github repository](github.com/lifegraph/musicparty-server) for it or let us know and we'll make a tutorial for it!
+
+The server will take care of converting the Tag into a Facebook ID, grabbing the musical preferences of that person associated with that Facebook ID, merging those tracks back into the playlist for everyone else in the room and passing those tracks to who ever connects to the URL associated with the Device ID (musicparty.herokuapp.com/*Device ID*/party). We are using the [Tomahawk API](blog.tomahawk-player.org/post/41518909327/toma-hk-api-making-music-hacks-easier-since-2013) when you connect to a music party in your browser to find a media source that can stream each particular track (youtube, soundcloud, etc.). 
+
+We built the [Lifegraph Connect](lifegraphconnect.com) platform to have a centralized API and database for bridging physical and digital identities. It's easy to use, and once we put the hardware we'll sync our IDs there so that we can convert an RFID tag to a Facebook ID.
+
+Now let's get started with the tutorial!
 	
-Setting up the Node Server
--------------
-We’re going to start by setting up our server using Node JS. Node JS is a really quick and easy framework for creating web servers. You can find installation instructions [here](http://nodejs.org/). If you’re on a Windows machine, you may need to restart your computer after installation (even if it doesn’t tell you that you need to). 
+Set up the Hardware Stack
+------------------------
+The first thing we'll need to do is put out hardware together. If you haven't soldered the stackable header pins onto your RFID shield, you should do that first. Lady Adafruit has [a great video](http://www.youtube.com/embed/WgLV5X1iWWw) that explains how to do it for first-timers. 
 
-Great, now we’re ready to start coding. We'll be using the terminal (not the Node JS application) to complete these tasks and for a few similar tasks in the future. On Windows, this can be accessed by hitting the windows key, typing 'cmd', and then pressing enter. On OSX, just open the Terminal application. Run the following commands in the terminal.
-
-```
-mkdir music-party-tutorial
-cd music-party-tutorial
-npm install serialport fs node-uuid rem
-```
-
-This creates a project directory for us and tells Node Package Manager (AKA npm) to install four node modules (packages of code): serialPort for communicating with Arduino, fs which gives us control of our file system, REM for making easy network calls, and node-uuid, which will allow us to create a unique id for our Music Party device so that the server can keep track of which users are listening to which Music Party device. 
-
-Now we can start creating our server. In your editor of choice ([<3 Sublime Text](http://www.sublimetext.com/)) create a file called “app.js", enter in the code below and save it in our project directory (music-party-tutorial). What we're doing in this chunk is simply importing the code from the module we need to run a web app ('http'), telling the server to listen on port 5000, and sending the same response (“Sweet, it seems to be working.”) to every client that tries to connect.
-
-```js
-// Include the http module
-var http = require('http');
-
-var port = 5000;
-
-// Start the http server on port 5000
-var server = http.createServer(function (request, response) {
-  response.writeHead(200);
-  response.end("Sweet, it seems to be working.");
-});
-
-server.listen(port, function () {
-  console.log("Express server listening on port", port);
-});
-```
-
-Now, that we have the code for the server written, we should start running our server. In your terminal window, type ‘node app.js’ to start the terminal (later, when you want to stop it, type control + c”). 
-
-***Note:*** If you receive an error like 'Error: listen EADDRINUSE' when trying to run the server, you may need to change the active port. To do that, change line 12 of ‘app.js' to app.set(‘port’, X); where X is some number between 3000 and 9000 but not 5000.
-
-With your web browser, go to ‘[http://localhost:5000](http://localhost:5000)’ (or, if you had to change your port, enter that number after the colon). You should see the message that tells you it’s working!
-
+After you're done soldering the stackable header pins to the shields, you'll need to attach the WiFly module. We've made a whole tutorial dedicated to connecting the Arduino to the internet with WiFly but for the sake of this Instructable, just [follow the section for soldering and connecting the pins into the shield](github.com/lifegraph/arduino-wifi-setup#soldering-the-wifly-xbee-form-factor). You can see a picture of the hardware stack [here](http://www.instructables.com/files/deriv/FRE/GNBL/HF2435LQ/FREGNBLHF2435LQ.MEDIUM.jpg) (with the Sparkfun board).  
 
 Detecting RFID
 --------------
@@ -78,7 +57,7 @@ We'll also want to intall some libraries to make this coding less tedious. If yo
 
 Place the RFID Shield on top of the Arduino. Now we can get to the code. All the code you'll need can be found in the link below. 
 
-### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> arduino_rfid_reader.ino](https://raw.github.com/lifegraph/musicparty/master/arduino_rfid_reader/arduino_rfid_reader.ino)
+### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> arduino_rfid_reader.ino](raw.github.com/lifegraph/musicparty/master/tutorial_code_snippets/rfid/rfid.ino)
 
 Create a new Arduino sketch by selecting the Arduino application and clicking the dog-eared paper icon, copy the code from the link above right in, and save it in your project directory. All you have to do now is uncomment three lines at the top of the file depending on which RDID reader you have. 
 
@@ -189,129 +168,127 @@ void loop() {
 ```
 The loop method is called over and over again by Arduino. As soon as it's code completes, it starts over. In our loop method, we create the success, uid, and uidLength variables to store the results of a discovered tag. We then attempt to read a tag, and if we do, the uid will be stored in the uid variable and the length of that uid will be store in uidLength. Then we simply print it out, and note what time it was printed out to make sure it doesn't print over and over again.
 
-Pretty simple. Now we'll configure the server that will be the middleman between the Arduino and our external server so that we can make easy network calls (like telling our server who tagged in). 
 
-Sending the UUID to the Local Server
+Connecting to the Internet with WiFly
 ------------------------------
-Now we'll put the Arduino code to the side and modify the local server code so that it can read in the Serial data from the Arduino. This will let us use the internet connection of our computer to send the information about our tag to the Music Party Server (which handles actual web traffic). We’re going to open up a serial port to the Arduino and write out whatever UUID we get over. Replace the contents of your ‘app.js’ file with the code below; the only thing you’ll need to change is the serial port of your Arduino (the variable names 'arduino_port', which is the 6th line of code. You can find the serial port your Arduino is using by going to Tools->Serial Port in the Arduino application.
+Now we need to send out Tag ID to the server so it can keep track of who is listening to music on each device. We wrote [an Arduino library](github.com/lifegraph/arduino-lifegraph) to make web requests much, much easier that we'll use. You can find all the code you'll need here and we'll explain the code line by line below. If you don't want to read the explanation, just make sure you change the network authentication information so the WiFly can connect to your internet.
 
-### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> app.js](https://raw.github.com/lifegraph/musicparty/master/tutorial_code_snippets/app-readUUID.js)
-
-If you keep your arduino powered, run this local server code by running 'node app-readUUID.js' (from the terminal) in the project directory, tap your RFID card on the reader, you should see it print out the UUID of that card in the terminal! This code works by simply opening up a serial port, and reading what the Arduino prints out. Feel free to read the extremely verbose comments in that code snippet to learn more about how exactly it works.
-
-	
-Creating a Music Party ID
--------------------------
-
-Our RFID tags have a unique ID that allows us to keep track of which person is tagging in, but in order to keep track of which Music Party device is contacting it, we need to generate another unique ID. UUIDs are just long numbers that are very likely to be unique (there are 3.4 x 10^38 different combinations).
-
-In code we’ll create a config.json file in which we store the Unique ID of our streaming device. Then, when we start the server, we can check if the ID has been created, and if not, generate one and store it in the file.
-
-Copy the code from the link below and paste it into your 'app.js' file. Again, feel free to read the verbose comments to understand how it's working. Run 'node app.js' and make sure the terminal reports that it created a new UUID in the config file!
-
-### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> app-deviceUUID.js](https://raw.github.com/lifegraph/musicparty/master/tutorial_code_snippets/app-readUUID.js)
-
-Alternatively, you can simply make a config.json file (or edit the one that is made automatically), to have a custom device ID. For example, in the config.json, you can have:
+We've made a few additions to the previous RFID reading code. Let's take a look at the new additions at the top of the file:
 
 ```
-{"deviceUUID":"lifegraph-lab"}
+#include <WiFlyHQ.h>
+#include <Lifegraph.h>
+
+// Wifi Serial connection
+SoftwareSerial wifiSerial(9,10);
+
+// API we'll use to talk to the internet
+JSONAPI api;
+
+/* Change these to match your WiFi network */
+const char mySSID[] = "YOUR_NETWORK_NAME";
+const char myPassword[] = "YOUR_NETWORK_PASSWORD";
+
+// The host server that handles our request
+const char host[] = "musicparty.herokuapp.com";
+
+// Unique ID of this Music Party Streaming Device
+char deviceId[] = "YOUR_OWN_DEVICE_ID_HERE";
 ```
 
-It will make your music party room name more memorable (just make sure it's not too generic or else you risk sharing it with a random other person!).
+We added the WiFlyHQ and Lifegraph libraries to make connecting to the internet easier. The WiFly module needs to have a serial port to communicate with the Arduino with which we create on pins 9 and 10. Then we instantiate a JSON API (part of the Lifegraph Library) which wraps up HTTP calls into a few simple methods. We then provide our network credentials so that the WiFly can connect. The host is our own Music Party servers which handle all the http traffic. The last line defines the deviceId which you can make up. It will determine the URL of your music party so the more unique you make it, the less likely random people will be connecting to your music party. 
 
-Connecting With the Music Party Server
------------------------
-
-Now we'll need to send up the tag ID and the device ID to the server so it knows to add users to our music party. We're going to use the 'rem' node package to make sending the HTTP call (with our tag ID and device ID) to the server really simple. If you would like to know more about how to make a backend API (like the Music Party Server) yourself, let us know and we’ll create a tutorial for it! For now, check out the code [here](https://github.com/lifegraph/musicparty-server)).
-
-The code for this section can be found at the link below. Copy it and paste it into your 'app.js' file. 
-
-### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> app-rem.js](https://raw.github.com/lifegraph/musicparty/master/tutorial_code_snippets/app-rem.js)
-
-We made very few additions. We simply imported rem:
+Now let's take a look at the new code in the setup function:
 
 ```
-var rem = require('rem');
+wifiSerial.begin(9600);
+
+Serial.println("Connecting WiFly...");
+
+  // Setup network connection.
+
+  if (!connectWifi(&wifiSerial, mySSID, myPassword)) {
+    Serial.println("Failed to join network.");
+  } else {
+    Serial.println("Joined wifi network.");
+  }
+
+// Create an object to send http requests 
+  api = JSONAPI(host, "", LIFEGRAPH_BUFFER, LIFEGRAPH_BUFFER_SIZE);
 ```
 
-We defined the hostname of our server:
+In this code chunk, we're setting up the WiFly Serial communication and connecting to the WiFi. Then we create an API object to handle our HTTP requests to the Music Party Servers.
+
+Now let's look at the addition to the looping code: 
 
 ```
-var host = "http://musicparty.herokuapp.com";
-```
-We wrote the method to send the device ID and tap ID to the server and receive the reponse:
+// Start using the wifi serial so we can sent a request
+wifiSerial.listen();
 
-```
-function postTap(deviceUUID, pID, callback) {
-  rem.json(host + '/tap').post({
-    deviceUUID: deviceUUID,
-    pID: pID
-  }, function (err, json) {
-    return callback(err, json);
-  });
+// Send the next post to the tap endpoint
+api.post("/tap");
+
+// Add the device Idparam
+api.form("deviceId", deviceId);
+
+// Convert the pId from uint8_t to a char so the server can understand it
+Lifegraph.stringifyTag(pId, pIdLength, pIdString);
+
+// Add the pId param
+api.form("pId", pIdString); 
+
+// Send the request and get a response
+int response = api.request();
+
+// Print out the response
+Serial.println("Server response: " + String(response));
+ 
+if (response == 404 || response == 406) {
+      Serial.println(F("Go to lifegraphconnect.com to sync device"));
+    }
+else if (response == 200 || response == 0) {
+  Serial.print(F("Go to http://musicparty.herokuapp.com/"));
+  Serial.print(deviceId);
+  Serial.println(F("/party"));
 }
-```
-
-And finally, we posted the tap to the server after reading it through serial:
 
 ```
-// Post the tap to the server
-postTap(deviceUUID, pID, function (err, res) {
-  console.log(res);
-});
-        
-```
 
-Now, if we run that code, it should send out the ID's to the server and return with a response. The response should tell you "'Physical ID has not been bound to an account. Go to http://connect.lifegraphlabs.com/, Connect with Music Player App, and tap again.'" which is what we'll do next.
+
+
+Once we receive a successful tap from an NFC/RFID device, we start communicating with the WiFI board instead of the RFID board (wifiSerial.listen()). Then, we set the endpoint we are going to hit (which will always be '/tap') and add the deviceId as a parameter of the request. Then we convert our pId from an array of uint_8 which looks like garbage when you print it out, to characters with the stringifyTag method. Finally, we send the request and check the response. 
+
+Put the code onto your Arduino, open up the serial monitor, and verify that you're sending a request successfully. It should print out something like this:
+
+```
+Connecting WiFly...
+Joined wifi network.
+Requesting Firmware Version to make sure comm is working...
+Found Version Data. Comm is working.
+Waiting for an RFID Card ...
+Got a tag!
+Length: 4, ID: 0x88 0x04 0x16 0x34
+
+open musicparty.herokuapp.com 80
+Server response: 404
+Go to lifegraphconnect.com to sync device
+Great, now you're ready to sync your digital and physical IDs!
+```
 
 Syncing Physical IDs to Virtual IDs with Lifegraph Connect
 -----------------------------------------------------------
 
-The last thing we need before receiving music from the server is to sync our RFID tag with our Facebook ID. The team at [Lifegraph Labs](http://lifegraphlabs.com) has created a website and an API called [Lifegraph Connect](http://connect.lifegraphlabs.com/) to let you easily sync a physical identity (your RFID tag) with a virtual identity (your Facebook ID) that we’ll take advantage of for this tutorial.
+[Lifegraph Connect](http://lifegraphconnect.com) is a platform we build to sync digital and physical tokens. Anyone can develop an application on top of it. Email us at lifegraphlabs@gmail.com to learn more about it!
 
-Make sure your Arduino and local server is running and go to [Lifegraph Connect](http://connect.lifegraphlabs.com/). Click the "Login to see access" button next to the music party app". Login with your Facebook account which will then redirect you back to Lifegraph Connect. Click the "Allow access" button next to Music Party. Now, tap your RFID card against the RFID reader, and a un-claimed ID should appear near the top of Lifegraph Connect. Click the button to claim it. Great, now we've synced our physical and virtual ID! 
+Open a browser and go to [lifegraphconnect.com/musicparty](lifegraphconnect.com/musicparty) and enter your Facebook credentials. On the next screen then click "Grant Access" on the Music Party app after you're redirected back to the Lifegraph Connect website. Now tap your card again and notice that an alert box pops up and says that a new, unclaimed ID was detected (see [this image](http://www.instructables.com/files/deriv/FDH/CM4U/HF2435VF/FDHCM4UHF2435VF.MEDIUM.jpg) for an example). Click the button to claim it and you're all set! 
 
-Note: We realize that was a lot of clicks and are in the process of making this syncing process easier.  
-
-Final Part: Automatically open browser window to play
+Final Part: Listening To Music
 -----------------------------------------------------
 
-You can actually use the Music Party Service now. If you tap your card against the reader (while your Arduino and local server are running), the terminal should report that the user was added to the streaming session. If you then open your browser to http://musicparty.herokuapp.com/*YOUR_DEVICEID_HERE*/party, you can start your music party!
+Now that you're synced. You can tap in to start streaming and tap again to stop streaming (it would be a good idea to add some LEDs so you have a better indicator of what's going on). 
 
-But just to make things easier, we're going to make our local server automatically open our browser window to the right URL.
+Open http://musicparty.herokuapp.com/YOUR_DEVICE_ID/party where YOUR_DEVICE_ID is the deviceId you entered in your Arduino sketch. Tap your NFC/RFID device on the RFID reader and watch as you join the room and your favorite music starts playing! Now you can easily sync all your friends card and you can all automatically have your favorite music play without having to manage playlists!
 
-The link to the complete, functioning local server code can be found below. Copy and paste it into your 'app.js' file.
+Note: If you don't see any music play when you're added to a room, go like more music on Facebook. Then tap out and back in again.
 
-### [<img src="http://game-icons.net/icons/lorc/originals/png/papers.png" height="24"> app.js](https://raw.github.com/lifegraph/musicparty/master/app.js)
-
-We basically just added a function to find the correct command to open the browser based on what OS you're using:
-```
-function getCorrectBrowserCommand() {
-  var isWin = !!process.platform.match(/^win/i);
-  var isMac = !!process.platform.match(/^darwin/i);
-  if (isWin) {
-    return 'start';
-  } else if (isMac) {
-    return 'open';
-  } else {
-    return 'xdg-open';
-  }
-}
-```
-
-Then we call that function with the URL when an empty room gets a new user (yes, if you are the only person in a room and tag out, then tag back in, it will open a new window. We haven't been able to kill the old browser process yet...):
-
-```
-// Grab the correct command for opening a browser (OS dependent)
-browserCommand = getCorrectBrowserCommand();
-
-// Open it
-spawn(browserCommand, [host + '/' + deviceUUID + "/party/"]);
-```
-
-Now you and your friends can tap in to listen to music together, and tap out when you're done!
-
-The music party website uses a really cool API called [Tomahawk](http://blog.tomahawk-player.org/post/41518909327/toma-hk-api-making-music-hacks-easier-since-2013), which will automatically check many different sources such as SoundCloud, YouTube, Spotify, etc. for a song. When you hit the “party” URL mentioned above, the Tomahawk API will search for each song in the JSON array we provide it and play it when found. The remote Music Party back end will take care of all of this for us! 
-
-If you have any questions about the tutorial or the remote [Music Party Server])https://github.com/lifegraph/musicparty-server), please [get in touch with us](https://twitter.com/lifegraphlabs).
-
+Hope you've enjoyed this tutorial and if you want to learn more about connecting devices to the internet, check out [Lifegraph Labs](http://lifegraphlabs.com). 

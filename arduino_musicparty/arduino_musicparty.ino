@@ -13,19 +13,20 @@ SoftwareSerial wifiSerial(9,10);
 JSONAPI api;
 
 /* Change these to match your WiFi network */
-const char mySSID[] = "YOUR_NETWORK_NAME";
-const char myPassword[] = "YOUR_NETWORK_PASSWORD";
+const char mySSID[] = "OLIN_GUEST";
+const char myPassword[] = "The_Phoenix_Flies";
 
 // The host server that handles our request
 const char host[] = "musicparty.herokuapp.com";
 
 // The number of seconds to wait before accepting another tag
 const uint8_t TIME_DELAY = 2;
+
 // Var to keep track of time between tags
 long lastReadTime = 0;
 
 // Unique ID of this Music Party Streaming Device
-char deviceId[] = "test-party";
+char deviceId[] = "LifegraphLabs";
 
 // Helper function to print out the id of the tag
 void printTagInfo(uint8_t *pId, uint8_t pIdLength);
