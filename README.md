@@ -46,7 +46,9 @@ Set up the Hardware Stack
 ------------------------
 The first thing we'll need to do is put out hardware together. If you haven't soldered the stackable header pins onto your RFID shield, you should do that first. Lady Adafruit has [a great video](http://www.youtube.com/embed/WgLV5X1iWWw) that explains how to do it for first-timers. 
 
-After you're done soldering the stackable header pins to the shields, you'll need to attach the WiFly module. We've made a whole tutorial dedicated to connecting the Arduino to the internet with WiFly but for the sake of this Instructable, just [follow the section for soldering and connecting the pins into the shield](github.com/lifegraph/arduino-wifi-setup#soldering-the-wifly-xbee-form-factor). You can see a picture of the hardware stack [here](http://www.instructables.com/files/deriv/FRE/GNBL/HF2435LQ/FREGNBLHF2435LQ.MEDIUM.jpg) (with the Sparkfun board).  
+After you're done soldering the stackable header pins to the shields, you'll need to attach the WiFly module. We've made a whole tutorial dedicated to connecting the Arduino to the internet with WiFly but for the sake of this Instructable, just [follow the section for soldering and connecting the pins into the shield](github.com/lifegraph/arduino-wifi-setup#soldering-the-wifly-xbee-form-factor). You can see a picture of the hardware stack below.  
+
+![Hardware Stack](http://www.instructables.com/files/deriv/FRE/GNBL/HF2435LQ/FREGNBLHF2435LQ.MEDIUM.jpg)
 
 Detecting RFID
 --------------
@@ -280,7 +282,9 @@ Syncing Physical IDs to Virtual IDs with Lifegraph Connect
 
 [Lifegraph Connect](http://lifegraphconnect.com) is a platform we build to sync digital and physical tokens. Anyone can develop an application on top of it. Email us at lifegraphlabs@gmail.com to learn more about it!
 
-Open a browser and go to [lifegraphconnect.com/musicparty](lifegraphconnect.com/musicparty) and enter your Facebook credentials. On the next screen then click "Grant Access" on the Music Party app after you're redirected back to the Lifegraph Connect website. Now tap your card again and notice that an alert box pops up and says that a new, unclaimed ID was detected (see [this image](http://www.instructables.com/files/deriv/FDH/CM4U/HF2435VF/FDHCM4UHF2435VF.MEDIUM.jpg) for an example). Click the button to claim it and you're all set! 
+Open a browser and go to [lifegraphconnect.com/musicparty](lifegraphconnect.com/musicparty) and enter your Facebook credentials. On the next screen then click "Grant Access" on the Music Party app after you're redirected back to the Lifegraph Connect website. Now tap your card again and notice that an alert box pops up and says that a new, unclaimed ID was detected (see below). Click the button to claim it and you're all set! 
+
+![a wild unclaimed ID has appeared!](http://www.instructables.com/files/deriv/FRE/GNBL/HF2435LQ/FREGNBLHF2435LQ.MEDIUM.jpg)
 
 Final Part: Listening To Music
 -----------------------------------------------------
