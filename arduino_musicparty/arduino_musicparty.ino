@@ -1,7 +1,7 @@
+#include <SoftwareSerial.h>
+#include <sm130.h>
 #include <WiFlyHQ.h>
 #include <Lifegraph.h>
-#include <sm130.h>
-#include <SoftwareSerial.h>
 
 // RFID Reader Object
 NFCReader rfid(7, 8);
@@ -12,11 +12,19 @@ SoftwareSerial wifiSerial(9,10);
 // API we'll use to talk to the internet
 JSONAPI api;
 
-/* Change these to match your WiFi network */
-const char mySSID[] = "OLIN_GUEST";
-const char myPassword[] = "The_Phoenix_Flies";
+/**
+ * Configuration
+ */
 
-// The host server that handles our request
+// Change these to match your WiFi network
+const char mySSID[] = "YOUR_NETWORK_NAME";
+const char myPassword[] = "YOUR_NETWORK_PASSWORD";
+
+// Unique ID of this Music Party Streaming Device
+char deviceId[] = "test-party";
+
+
+// The host server that handles our request (default is musicparty.herokuapp.com)
 const char host[] = "musicparty.herokuapp.com";
 
 // The number of seconds to wait before accepting another tag
@@ -25,8 +33,9 @@ const uint8_t TIME_DELAY = 2;
 // Var to keep track of time between tags
 long lastReadTime = 0;
 
-// Unique ID of this Music Party Streaming Device
-char deviceId[] = "LifegraphLabs";
+/**
+ * Main
+ */
 
 // Helper function to print out the id of the tag
 void printTagInfo(uint8_t *pId, uint8_t pIdLength);
