@@ -1,7 +1,7 @@
 Music Party Tutorial
 =========
 
-![Music Party Tutorial](http://i.imgur.com/v1GhuMw.png)
+[![Music Party Tutorial](http://i.imgur.com/v1GhuMw.png)](http://www.lifegraphlabs.com/how-to)
 
 What it is
 ----------
