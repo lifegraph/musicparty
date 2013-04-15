@@ -22,7 +22,7 @@ What you’ll need
 * An Internet Connection
 * [An Arduino](https://www.sparkfun.com/products/11021)
 * [Adafruit NFC/RFID Reader Shield](http://www.adafruit.com/products/789) or [Sparkfun RFID shield](https://www.sparkfun.com/products/10406) (& [Header Pins](https://www.adafruit.com/products/85) to connect to the Arduino)
-* [WiFly Module](www.sparkfun.com/products/10822)
+* [WiFly Module](http://www.sparkfun.com/products/10822)
 * [An RFID Tag](http://www.adafruit.com/products/363) (Any 13.56kHz RFID card will work)
 * A Facebook account (that has ‘liked’ bands/music)
 
