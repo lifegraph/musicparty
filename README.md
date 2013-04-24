@@ -23,7 +23,7 @@ What you’ll need
 * [An Arduino](https://www.sparkfun.com/products/11021)
 * [Adafruit NFC/RFID Reader Shield](http://www.adafruit.com/products/789) or [Sparkfun RFID shield](https://www.sparkfun.com/products/10406) (& [Header Pins](https://www.adafruit.com/products/85) to connect to the Arduino)
 * [WiFly Module](http://www.sparkfun.com/products/10822)
-* [An RFID Tag](http://www.adafruit.com/products/363) (Any 13.56kHz RFID card will work)
+* [An RFID Tag](http://www.adafruit.com/products/363) (Any 13.56MHz RFID card will work)
 * A Facebook account (that has ‘liked’ bands/music)
 
 **Quick ote:** We’ll guide you through how to do this with the above mentioned shields but you can easily modify it to be able to work with a different RFID solution if you already own one. 
